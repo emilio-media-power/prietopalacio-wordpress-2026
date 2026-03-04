@@ -271,6 +271,7 @@ __webpack_require__(/*! core-js/modules/esnext.iterator.constructor.js */ "../no
 __webpack_require__(/*! core-js/modules/esnext.iterator.filter.js */ "../node_modules/core-js/modules/esnext.iterator.filter.js");
 __webpack_require__(/*! core-js/modules/esnext.iterator.find.js */ "../node_modules/core-js/modules/esnext.iterator.find.js");
 __webpack_require__(/*! core-js/modules/esnext.iterator.for-each.js */ "../node_modules/core-js/modules/esnext.iterator.for-each.js");
+var _dompurify = _interopRequireDefault(__webpack_require__(/*! dompurify */ "../node_modules/dompurify/dist/purify.cjs.js"));
 var _screenfull = _interopRequireDefault(__webpack_require__(/*! ./screenfull */ "../assets/dev/js/frontend/utils/lightbox/screenfull.js"));
 var _eIcons = __webpack_require__(/*! @elementor/e-icons */ "../assets/dev/js/frontend/utils/icons/e-icons.js");
 module.exports = elementorModules.ViewModule.extend({
@@ -460,7 +461,7 @@ module.exports = elementorModules.ViewModule.extend({
     if (window.elementorCommon) {
       elementorDevTools.deprecation.deprecated('elementorFrontend.utils.lightbox.setHTMLContent()', '3.1.4');
     }
-    this.getModal().setMessage(html);
+    this.getModal().setMessage(_dompurify.default.sanitize(html));
   },
   setVideoContent(options) {
     const $ = jQuery;
@@ -470,6 +471,12 @@ module.exports = elementorModules.ViewModule.extend({
         src: options.url,
         autoplay: ''
       }, options.videoParams);
+      const paramKeys = Object.keys(videoParams);
+      paramKeys.forEach(key => {
+        if (key.toLowerCase().startsWith('on')) {
+          delete videoParams[key];
+        }
+      });
       $videoElement = $('<video>', videoParams);
     } else {
       let apiProvider;
@@ -811,6 +818,14 @@ module.exports = elementorModules.ViewModule.extend({
     $footer.append($title, $description);
     return $footer;
   },
+  isValidUrl(url) {
+    if (!url) {
+      return false;
+    }
+    const dangerous = ['javascript:', 'data:', 'vbscript:', 'file:'];
+    const urlLower = url.toLowerCase().trim();
+    return !dangerous.some(protocol => urlLower.startsWith(protocol));
+  },
   setSlideshowContent(options) {
     const {
         i18n
@@ -830,14 +845,19 @@ module.exports = elementorModules.ViewModule.extend({
       });
     let $prevButton, $nextButton;
     options.slides.forEach(slide => {
+      const isVideo = !!slide.video;
+      const isValidSlideUrl = isVideo ? this.isValidUrl(slide.video) : this.isValidUrl(slide.image);
+      if (!isValidSlideUrl) {
+        return;
+      }
       let slideClass = slideshowClasses.slide + ' ' + classes.item;
-      if (slide.video) {
+      if (isVideo) {
         slideClass += ' ' + classes.video;
       }
       const $slide = $('<div>', {
         class: slideClass
       });
-      if (slide.video) {
+      if (isVideo) {
         $slide.attr('data-elementor-slideshow-video', slide.video);
         const playVideoLoadingElement = this.isFontIconSvgExperiment ? _eIcons.loading.element : '<i>',
           $playIcon = $('<div>', {
@@ -1294,4 +1314,4 @@ module.exports = elementorModules.ViewModule.extend({
 /***/ })
 
 }]);
-//# sourceMappingURL=lightbox.a1f44406e887981f48c7.bundle.js.map
+//# sourceMappingURL=lightbox.d9ea72d232a14f514ee2.bundle.js.map

@@ -379,7 +379,6 @@ exports.getClickNumber = getClickNumber;
 exports.initializeAndEnableTracking = initializeAndEnableTracking;
 exports.isEventsManagerAvailable = isEventsManagerAvailable;
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "../node_modules/@babel/runtime/helpers/defineProperty.js"));
-var _mixpanelBrowser = _interopRequireDefault(__webpack_require__(/*! mixpanel-browser */ "../node_modules/mixpanel-browser/dist/mixpanel.module.js"));
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0, _defineProperty2.default)(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 var ONBOARDING_EVENTS_MAP = exports.ONBOARDING_EVENTS_MAP = {
@@ -426,27 +425,20 @@ function isEventsManagerAvailable() {
   var _elementorCommon2;
   return ((_elementorCommon2 = elementorCommon) === null || _elementorCommon2 === void 0 ? void 0 : _elementorCommon2.eventsManager) && 'function' === typeof elementorCommon.eventsManager.dispatchEvent;
 }
-function isMixpanelInitialized() {
-  if ('undefined' === typeof _mixpanelBrowser.default || !_mixpanelBrowser.default) {
-    return false;
-  }
-  try {
-    var distinctId = _mixpanelBrowser.default.get_distinct_id();
-    return distinctId !== undefined && distinctId !== null;
-  } catch (error) {
-    return false;
-  }
-}
 function initializeAndEnableTracking() {
   if (!isEventsManagerAvailable()) {
     return;
   }
-  if (!isMixpanelInitialized()) {
-    elementorCommon.eventsManager.initializeMixpanel();
+  if (elementorCommon.eventsManager.trackingEnabled) {
+    return;
   }
-  if (!elementorCommon.eventsManager.trackingEnabled) {
+  if (elementorCommon.eventsManager.isMixpanelReady()) {
     elementorCommon.eventsManager.enableTracking();
+    return;
   }
+  elementorCommon.eventsManager.initializeMixpanel(function () {
+    return elementorCommon.eventsManager.enableTracking();
+  });
 }
 function dispatch(eventName) {
   var payload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -883,4 +875,4 @@ var _default = exports["default"] = StorageManager;
 /***/ })
 
 }]);
-//# sourceMappingURL=29f5723514661bfdffd8.bundle.js.map
+//# sourceMappingURL=1144a7ccb8f8bf9d8772.bundle.js.map
