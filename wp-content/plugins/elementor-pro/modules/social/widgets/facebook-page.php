@@ -4,6 +4,7 @@ namespace ElementorPro\Modules\Social\Widgets;
 use Elementor\Controls_Manager;
 use ElementorPro\Base\Base_Widget;
 use ElementorPro\Modules\Social\Classes\Facebook_SDK_Manager;
+use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -27,6 +28,28 @@ class Facebook_Page extends Base_Widget {
 		return [ 'facebook', 'social', 'embed', 'page' ];
 	}
 
+	protected function is_dynamic_content(): bool {
+		return false;
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-social' ];
+	}
+
 	protected function register_controls() {
 		$this->start_controls_section(
 			'section_content',
@@ -36,6 +59,19 @@ class Facebook_Page extends Base_Widget {
 		);
 
 		Facebook_SDK_Manager::add_app_id_control( $this );
+
+		$this->add_control(
+			'widget_exclusively_web',
+			[
+				'type' => Controls_Manager::ALERT,
+				'alert_type' => 'info',
+				'content' => sprintf(
+					esc_html__( 'Facebook page embedding is exclusively available for the web, mobile devices are not supported. %1$sLearn more%2$s', 'elementor-pro' ),
+					sprintf( '<a href="%s" target="_blank">', Facebook_SDK_Manager::FACEBOOK_PLUGINS_FAQ_URL ),
+					'</a>'
+				),
+			]
+		);
 
 		$this->add_control(
 			'url',
@@ -107,16 +143,24 @@ class Facebook_Page extends Base_Widget {
 			[
 				'label' => esc_html__( 'Height', 'elementor-pro' ),
 				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'default' => [
 					'size' => 500,
 				],
 				'range' => [
 					'px' => [
-						'min' => 70,
+						'min' => 50,
 						'max' => 1000,
 					],
+					'em' => [
+						'min' => 5,
+						'max' => 100,
+					],
+					'rem' => [
+						'min' => 5,
+						'max' => 100,
+					],
 				],
-				'size_units' => [ 'px' ],
 			]
 		);
 

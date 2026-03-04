@@ -6,6 +6,7 @@ use ElementorPro\Modules\DynamicTags\ACF;
 use ElementorPro\Modules\DynamicTags\Toolset;
 use ElementorPro\Modules\DynamicTags\Pods;
 use ElementorPro\Core\Utils;
+use ElementorPro\License\API;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -29,22 +30,25 @@ class Module extends TagsModule {
 
 	const WOOCOMMERCE_GROUP = 'woocommerce';
 
-	// TODO: Remove when Core 3.10.0 is released.
-	const DATETIME_CATEGORY = 'datetime';
+	const LICENSE_FEATURE_ACF_NAME = 'dynamic-tags-acf';
+	const LICENSE_FEATURE_PODS_NAME = 'dynamic-tags-pods';
+	const LICENSE_FEATURE_TOOLSET_NAME = 'dynamic-tags-toolset';
 
 	public function __construct() {
 		parent::__construct();
 
+		$this->add_component( 'author-meta-filter', new Components\Author_Meta_Filter() );
+
 		// ACF 5 and up
-		if ( class_exists( '\acf' ) && function_exists( 'acf_get_field_groups' ) ) {
+		if ( class_exists( '\acf' ) && function_exists( 'acf_get_field_groups' ) && API::is_licence_has_feature( self::LICENSE_FEATURE_ACF_NAME, API::BC_VALIDATION_CALLBACK ) ) {
 			$this->add_component( 'acf', new ACF\Module() );
 		}
 
-		if ( function_exists( 'wpcf_admin_fields_get_groups' ) ) {
+		if ( function_exists( 'wpcf_admin_fields_get_groups' ) && API::is_licence_has_feature( self::LICENSE_FEATURE_TOOLSET_NAME, API::BC_VALIDATION_CALLBACK ) ) {
 			$this->add_component( 'toolset', new Toolset\Module() );
 		}
 
-		if ( function_exists( 'pods' ) ) {
+		if ( function_exists( 'pods' ) && API::is_licence_has_feature( self::LICENSE_FEATURE_PODS_NAME, API::BC_VALIDATION_CALLBACK ) ) {
 			$this->add_component( 'pods', new Pods\Module() );
 		}
 
@@ -73,6 +77,8 @@ class Module extends TagsModule {
 		if ( $add_to_cart && $redirect ) {
 			add_filter( 'woocommerce_add_to_cart_redirect', [ $this, 'filter_woocommerce_add_to_cart_redirect' ], 10, 1 );
 		}
+
+		add_filter( 'elementor/document/save/data', [ $this->get_component( 'author-meta-filter' ), 'filter' ], 10, 2 );
 	}
 
 	public function filter_woocommerce_add_to_cart_redirect( $wc_get_cart_url ) {
@@ -85,7 +91,7 @@ class Module extends TagsModule {
 	}
 
 	public function get_tag_classes_names() {
-		return [
+		$tags = [
 			'Archive_Description',
 			'Archive_Meta',
 			'Archive_Title',
@@ -98,7 +104,6 @@ class Module extends TagsModule {
 			'Comments_Number',
 			'Comments_URL',
 			'Page_Title',
-			'Post_Custom_Field',
 			'Post_Date',
 			'Post_Excerpt',
 			'Post_Featured_Image',
@@ -114,6 +119,7 @@ class Module extends TagsModule {
 			'Site_URL',
 			'Internal_URL',
 			'Current_Date_Time',
+			'Reload_Page',
 			'Request_Parameter',
 			'Lightbox',
 			'Featured_Image_Data',
@@ -121,8 +127,14 @@ class Module extends TagsModule {
 			'Contact_URL',
 			'User_Info',
 			'User_Profile_Picture',
-			'Woocommerce_Add_To_Cart',
 		];
+		$tier = API::get_access_tier();
+
+		if ( 'essential' !== $tier ) {
+			$tags[] = 'Post_Custom_Field';
+		}
+
+		return $tags;
 	}
 
 	public function get_groups() {
@@ -152,5 +164,12 @@ class Module extends TagsModule {
 				'title' => esc_html__( 'WooCommerce', 'elementor-pro' ),
 			],
 		];
+	}
+
+	// TODO: Remove this in 3.37.0
+	public static function add_v4_svg_category( $categories ) {
+		return defined( 'Elementor\Modules\DynamicTags\Module::SVG_CATEGORY' )
+			? array_merge( $categories, [ \Elementor\Modules\DynamicTags\Module::SVG_CATEGORY ] )
+			: $categories;
 	}
 }

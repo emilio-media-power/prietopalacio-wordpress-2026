@@ -6,6 +6,7 @@ use Elementor\Core\Kits\Documents\Tabs\Global_Colors;
 use Elementor\Core\Kits\Documents\Tabs\Global_Typography;
 use Elementor\Group_Control_Typography;
 use ElementorPro\Modules\Woocommerce\Classes\Products_Renderer;
+use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -29,6 +30,24 @@ class Archive_Products extends Products {
 		return [
 			'woocommerce-elements-archive',
 		];
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-woocommerce-products', 'widget-woocommerce-products-archive' ];
 	}
 
 	protected function register_controls() {
@@ -71,9 +90,9 @@ class Archive_Products extends Products {
 			$this->add_control(
 				'wc_notice_wc_not_supported',
 				[
-					'type' => Controls_Manager::RAW_HTML,
-					'raw' => esc_html__( 'Looks like you are using WooCommerce, while your theme does not support it. Please consider switching themes.', 'elementor-pro' ),
-					'content_classes' => 'elementor-panel-alert elementor-panel-alert-warning',
+					'type' => Controls_Manager::ALERT,
+					'alert_type' => 'warning',
+					'content' => esc_html__( 'Looks like you are using WooCommerce, while your theme does not support it. Please consider switching themes.', 'elementor-pro' ),
 				]
 			);
 		}
@@ -81,18 +100,18 @@ class Archive_Products extends Products {
 		$this->add_control(
 			'wc_notice_use_customizer',
 			[
-				'type' => Controls_Manager::RAW_HTML,
-				'raw' => esc_html__( 'To change the Products Archive’s layout, go to Appearance > Customize.', 'elementor-pro' ),
-				'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+				'type' => Controls_Manager::ALERT,
+				'alert_type' => 'info',
+				'content' => esc_html__( 'To change the Products Archive’s layout, go to Appearance > Customize.', 'elementor-pro' ),
 			]
 		);
 
 		$this->add_control(
 			'wc_notice_wrong_data',
 			[
-				'type' => Controls_Manager::RAW_HTML,
-				'raw' => esc_html__( 'The editor preview might look different from the live site. Please make sure to check the frontend.', 'elementor-pro' ),
-				'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+				'type' => Controls_Manager::ALERT,
+				'alert_type' => 'info',
+				'content' => esc_html__( 'The editor preview might look different from the live site. Please make sure to check the frontend.', 'elementor-pro' ),
 			]
 		);
 
@@ -131,7 +150,7 @@ class Archive_Products extends Products {
 			[
 				'label' => esc_html__( 'Nothing Found Message', 'elementor-pro' ),
 				'type' => Controls_Manager::TEXTAREA,
-				'default' => esc_html__( 'It seems we can\'t find what you\'re looking for.', 'elementor-pro' ),
+				'default' => esc_html__( 'It seems we can’t find what you’re looking for.', 'elementor-pro' ),
 				'dynamic' => [
 					'active' => true,
 				],

@@ -15,7 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Admin extends App {
-	const USAGE_PARAM_INSTALL_TIME = 'install_time_pro';
 
 	/**
 	 * Get module name.
@@ -40,11 +39,9 @@ class Admin extends App {
 	public function enqueue_styles() {
 		$suffix = Utils::is_script_debug() ? '' : '.min';
 
-		$direction_suffix = is_rtl() ? '-rtl' : '';
-
 		wp_register_style(
 			'elementor-pro-admin',
-			ELEMENTOR_PRO_ASSETS_URL . 'css/admin' . $direction_suffix . $suffix . '.css',
+			ELEMENTOR_PRO_URL . 'assets/css/admin' . $suffix . '.css',
 			[],
 			ELEMENTOR_PRO_VERSION
 		);
@@ -95,13 +92,18 @@ class Admin extends App {
 
 	private function get_rollback_versions() {
 		$rollback_versions = get_transient( 'elementor_pro_rollback_versions_' . ELEMENTOR_PRO_VERSION );
+
 		if ( false === $rollback_versions ) {
 			$max_versions = 30;
 
-			$versions = API::get_previous_versions();
+			$versions = apply_filters( 'elementor-pro/settings/rollback/versions', [] );
 
-			if ( is_wp_error( $versions ) ) {
-				return [];
+			if ( empty( $versions ) ) {
+				$versions = API::get_previous_versions();
+
+				if ( is_wp_error( $versions ) ) {
+					return [];
+				}
 			}
 
 			$rollback_versions = [];
@@ -192,44 +194,40 @@ class Admin extends App {
 			wp_die( esc_html__( 'Error occurred, The version selected is invalid. Try selecting different version.', 'elementor-pro' ) );
 		}
 
-		$package_url = API::get_plugin_package_url( $version );
-		if ( is_wp_error( $package_url ) ) {
-			wp_die( $package_url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		/**
+		 * Filter to allow override the rollback process.
+		 * Should return an instance of `Rollback` class.
+		 *
+		 * @since 3.16.0
+		 *
+		 * @param Rollback|null $rollback The rollback instance.
+		 * @param string        $version  The version to roll back to.
+		 */
+		$rollback = apply_filters( 'elementor-pro/settings/rollback', null, $version );
+
+		if ( ! ( $rollback instanceof Rollback ) ) {
+			$package_url = API::get_plugin_package_url( $version );
+
+			if ( is_wp_error( $package_url ) ) {
+				wp_die( $package_url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+
+			$rollback = new Rollback( [
+				'version' => $version,
+				'plugin_name' => ELEMENTOR_PRO_PLUGIN_BASE,
+				'plugin_slug' => basename( ELEMENTOR_PRO__FILE__, '.php' ),
+				'package_url' => $package_url,
+			] );
 		}
-
-		$plugin_slug = basename( ELEMENTOR_PRO__FILE__, '.php' );
-
-		$rollback = new Rollback( [
-			'version' => $version,
-			'plugin_name' => ELEMENTOR_PRO_PLUGIN_BASE,
-			'plugin_slug' => $plugin_slug,
-			'package_url' => $package_url,
-		] );
 
 		$rollback->run();
 
 		wp_die( '', esc_html__( 'Rollback to Previous Version', 'elementor-pro' ), [ 'response' => 200 ] );
 	}
 
-	public function plugin_action_links( $links ) {
-		unset( $links['go_pro'] );
-
-		return $links;
-	}
-
 	public function plugin_row_meta( $plugin_meta, $plugin_file ) {
 		if ( ELEMENTOR_PRO_PLUGIN_BASE === $plugin_file ) {
-			$plugin_slug = basename( ELEMENTOR_PRO__FILE__, '.php' );
-			$plugin_name = esc_html__( 'Elementor Pro', 'elementor-pro' );
-
 			$row_meta = [
-				'view-details' => sprintf( '<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>',
-					esc_url( network_admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . $plugin_slug . '&TB_iframe=true&width=600&height=550' ) ),
-					/* translators: %s: Plugin name - Elementor Pro. */
-					esc_attr( sprintf( esc_html__( 'More information about %s', 'elementor-pro' ), $plugin_name ) ),
-					esc_attr( $plugin_name ),
-					__( 'View details', 'elementor-pro' )
-				),
 				'changelog' => '<a href="https://go.elementor.com/pro-changelog/" title="' . esc_attr( esc_html__( 'View Elementor Pro Changelog', 'elementor-pro' ) ) . '" target="_blank">' . esc_html__( 'Changelog', 'elementor-pro' ) . '</a>',
 			];
 
@@ -239,31 +237,37 @@ class Admin extends App {
 		return $plugin_meta;
 	}
 
-	public function change_tracker_params( $params ) {
-		unset( $params['is_first_time'] );
-
-		if ( ! isset( $params['events'] ) ) {
-			$params['events'] = [];
-		}
-
-		$params['events'] = array_merge( $params['events'], [
-			self::USAGE_PARAM_INSTALL_TIME => gmdate( 'Y-m-d H:i:s', Plugin::instance()->license_admin->get_installed_time() ),
-		] );
-
-		return $params;
-	}
-
 	public function add_finder_items( array $categories ) {
-		$settings_url = Settings::get_url();
-
 		$categories['settings']['items']['integrations'] = [
 			'title' => esc_html__( 'Integrations', 'elementor-pro' ),
 			'icon' => 'integration',
-			'url' => $settings_url . '#tab-integrations',
+			'url' => Settings::get_settings_tab_url( 'integrations' ),
 			'keywords' => [ 'integrations', 'settings', 'typekit', 'facebook', 'recaptcha', 'mailchimp', 'drip', 'activecampaign', 'getresponse', 'convertkit', 'elementor' ],
 		];
 
 		return $categories;
+	}
+
+	public function register_ajax_actions( $ajax_manager ) {
+		$ajax_manager->register_ajax_action( 'elementor_site_mailer_campaign', [ $this, 'handle_hints_cta' ] );
+	}
+
+	public function handle_hints_cta( $request ) {
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			wp_send_json_error();
+		}
+
+		if ( empty( $request['source'] ) ) {
+			return;
+		}
+
+		$campaign_data = [
+			'source' => sanitize_key( $request['source'] ),
+			'campaign' => 'sm-plg-v' . ProUtils\Abtest::get_variation( 'plg_site_mailer_submission' ),
+			'medium' => 'wp-dash',
+		];
+
+		set_transient( 'elementor_site_mailer_campaign', $campaign_data, 30 * DAY_IN_SECONDS );
 	}
 
 	/**
@@ -278,15 +282,22 @@ class Admin extends App {
 
 		add_action( 'elementor/admin/after_create_settings/' . Tools::PAGE_ID, [ $this, 'register_admin_tools_fields' ], 50 );
 
-		add_filter( 'plugin_action_links_' . ELEMENTOR_PLUGIN_BASE, [ $this, 'plugin_action_links' ], 50 );
+		add_filter( 'plugin_action_links_' . ELEMENTOR_PLUGIN_BASE, function ( $links ) {
+			return Action_Links::get_links( $links );
+		}, 50 );
+		add_filter( 'plugin_action_links_' . ELEMENTOR_PRO_PLUGIN_BASE, function ( $links ) {
+			return Action_Links::get_pro_links( $links );
+		}, 50 );
+
 		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 2 );
 
 		add_filter( 'elementor/finder/categories', [ $this, 'add_finder_items' ] );
 
-		add_filter( 'elementor/tracker/send_tracking_data_params', [ $this, 'change_tracker_params' ], 200 );
 		add_action( 'admin_post_elementor_pro_rollback', [ $this, 'post_elementor_pro_rollback' ] );
 		add_action( 'in_plugin_update_message-' . ELEMENTOR_PRO_PLUGIN_BASE, function( $plugin_data ) {
 			Plugin::elementor()->admin->version_update_warning( ELEMENTOR_PRO_VERSION, $plugin_data['new_version'] );
 		} );
+
+		add_action( 'elementor/ajax/register_actions', [ $this, 'register_ajax_actions' ] );
 	}
 }

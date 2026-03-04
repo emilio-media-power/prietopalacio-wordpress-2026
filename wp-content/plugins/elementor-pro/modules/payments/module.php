@@ -6,6 +6,7 @@ use ElementorPro\Base\Module_Base;
 use ElementorPro\Core\Utils;
 use ElementorPro\Plugin;
 use ElementorPro\Modules\Payments\Classes\Stripe_Handler;
+use ElementorPro\License\API;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -19,15 +20,18 @@ class Module extends Module_Base {
 	const STRIPE_TAX_ENDPOINT_URL = 'tax_rates';
 	const WP_DASH_STRIPE_API_KEYS_LINK = 'https://go.elementor.com/wp-dash-stripe-api-keys/';
 	const STRIPE_TRANSACTIONS_LINK = 'https://go.elementor.com/stripe-transaction/';
+	const STRIPE_LICENCE_FEATURE_NAME = 'stripe-button';
+
+	const WIDGET_NAME_CLASS_NAME_MAP = [
+		'paypal-button' => 'Paypal_Button',
+		self::STRIPE_LICENCE_FEATURE_NAME => 'Stripe_Button',
+	];
 
 	public $secret_key = '';
 	private $stripe_handler;
 
 	public function get_widgets() {
-		return [
-			'Paypal_Button',
-			'Stripe_Button',
-		];
+		return API::filter_active_features( static::WIDGET_NAME_CLASS_NAME_MAP );
 	}
 
 	/**
@@ -99,6 +103,10 @@ class Module extends Module_Base {
 			$this->secret_key = Utils::_unstable_get_super_global_value( $_POST, 'secret_key' );
 		}
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Permission denied' );
+		}
+
 		$stripe_handler = new Stripe_handler();
 		$response = $stripe_handler->get( $this->secret_key, self::STRIPE_TAX_ENDPOINT_URL, [ 'limit' => 0 ] );
 		$code = $response['response']['code'];
@@ -139,7 +147,7 @@ class Module extends Module_Base {
 	 *
 	 */
 	public function get_stripe_tax_rates( array $data ) {
-		Utils::_unstable_check_document_permissions( $data['editor_post_id'] );
+		Utils::_unstable_get_document_for_edit( $data['editor_post_id'] );
 
 		$tax_rates_lists = [];
 		$tax_rates_lists['live_api_key'] = $this->get_tax_rates( $this->get_global_stripe_live_secret_key() );
@@ -213,7 +221,7 @@ class Module extends Module_Base {
 		if ( ! empty( $data ) ) {
 			foreach ( $data as $k => $v ) {
 				$is_inclusive = ( true === $v['inclusive'] ? 'inclusive' : 'exclusive' );
-				$joint_tax_data = serialize( [ $v['id'], $is_inclusive ] );
+				$joint_tax_data = wp_json_encode( [ $v['id'], $is_inclusive ] );
 				$display_name = $v['description'] ? $v['display_name'] . ' - ' . $v['description'] : $v['display_name'];
 				$tax_rates_options[ $joint_tax_data ] = $display_name;
 			}
@@ -351,7 +359,7 @@ class Module extends Module_Base {
 		}
 
 		if ( isset( $args['tax_rates'] ) ) {
-			$tax_rate = unserialize( $args['tax_rates'] );
+			$tax_rate = json_decode( $args['tax_rates'] );
 			$tax_id = [ $tax_rate[0] ];
 			$tax_behavior = $tax_rate[1];
 
@@ -444,6 +452,15 @@ class Module extends Module_Base {
 		] );
 	}
 
+	/**
+	 * Get the base URL for assets.
+	 *
+	 * @return string
+	 */
+	public function get_assets_base_url(): string {
+		return ELEMENTOR_PRO_URL;
+	}
+
 	public function __construct() {
 		parent::__construct();
 
@@ -453,7 +470,7 @@ class Module extends Module_Base {
 		add_action( 'wp_ajax_nopriv_submit_stripe_form', [ $this, 'submit_stripe_form' ] );
 		add_action( 'elementor/ajax/register_actions', [ $this, 'register_ajax_actions' ] );
 
-		if ( current_user_can( 'administrator' ) ) {
+		if ( current_user_can( 'administrator' ) && API::is_licence_has_feature( static::STRIPE_LICENCE_FEATURE_NAME, API::BC_VALIDATION_CALLBACK ) ) {
 			add_action( 'elementor/admin/after_create_settings/' . Settings::PAGE_ID, [ $this, 'register_admin_fields' ], 999 );
 		}
 		add_action( 'wp_ajax_' . self::STRIPE_TEST_SECRET_KEY . '_validate', [ $this, 'ajax_validate_secret_key' ] );

@@ -3,41 +3,30 @@
  * Plugin Name: Elementor Pro
  * Description: Elevate your designs and unlock the full power of Elementor. Gain access to dozens of Pro widgets and kits, Theme Builder, Pop Ups, Forms and WooCommerce building capabilities.
  * Plugin URI: https://go.elementor.com/wp-dash-wp-plugins-author-uri/
+ * Version: 3.35.1
  * Author: Elementor.com
- * Version: 3.13.1
- * Elementor tested up to: 3.13.0
  * Author URI: https://go.elementor.com/wp-dash-wp-plugins-author-uri/
- *
+ * Requires PHP: 7.4
+ * Requires at least: 6.7
+ * Requires Plugins: elementor
+ * Elementor tested up to: 3.35.0
  * Text Domain: elementor-pro
  */
-update_option( 'elementor_pro_license_key', '*********' );
-update_option( '_elementor_pro_license_v2_data', [ 'timeout' => strtotime( '+12 hours', current_time( 'timestamp' ) ), 'value' => json_encode( [ 'success' => true, 'license' => 'valid', 'expires' => '01.01.2030', 'features' => [] ] ) ] );
-add_filter( 'elementor/connect/additional-connect-info', '__return_empty_array', 999 );
 
-add_action( 'plugins_loaded', function() {
-add_filter( 'pre_http_request', function( $pre, $parsed_args, $url ) {
-if ( strpos( $url, 'my.elementor.com/api/v2/licenses' ) !== false ) {
-return [
-'response' => [ 'code' => 200, 'message' => 'ОК' ],
-'body' => json_encode( [ 'success' => true, 'license' => 'valid', 'expires' => '01.01.2030' ] )
-];
-} elseif ( strpos( $url, 'my.elementor.com/api/connect/v1/library/get_template_content' ) !== false ) {
-$response = wp_remote_get( "http://wordpressnull.org/elementor/templates/{$parsed_args['body']['id']}.json", [ 'sslverify' => false, 'timeout' => 25 ] );
-if ( wp_remote_retrieve_response_code( $response ) == 200 ) {
-return $response;
-} else {
-return $pre;
-}
-} else {
-return $pre;
-}
-}, 10, 3 );
-} );
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'ELEMENTOR_PRO_VERSION', '3.13.1' );
+define( 'ELEMENTOR_PRO_VERSION', '3.35.1' );
+
+/**
+ * All versions should be `major.minor`, without patch, in order to compare them properly.
+ * Therefore, we can't set a patch version as a requirement.
+ * (e.g. Core 3.15.0-beta1 and Core 3.15.0-cloud2 should be fine when requiring 3.15, while
+ * requiring 3.15.2 is not allowed)
+ */
+define( 'ELEMENTOR_PRO_REQUIRED_CORE_VERSION', '3.32' );
+define( 'ELEMENTOR_PRO_RECOMMENDED_CORE_VERSION', '3.35' );
 
 define( 'ELEMENTOR_PRO__FILE__', __FILE__ );
 define( 'ELEMENTOR_PRO_PLUGIN_BASE', plugin_basename( ELEMENTOR_PRO__FILE__ ) );
@@ -56,27 +45,37 @@ define( 'ELEMENTOR_PRO_MODULES_URL', ELEMENTOR_PRO_URL . 'modules/' );
  * @return void
  */
 function elementor_pro_load_plugin() {
-	load_plugin_textdomain( 'elementor-pro' );
-
 	if ( ! did_action( 'elementor/loaded' ) ) {
 		add_action( 'admin_notices', 'elementor_pro_fail_load' );
 
 		return;
 	}
 
-	$elementor_version_required = '3.11.0';
-	if ( ! version_compare( ELEMENTOR_VERSION, $elementor_version_required, '>=' ) ) {
+	$core_version = ELEMENTOR_VERSION;
+	$core_version_required = ELEMENTOR_PRO_REQUIRED_CORE_VERSION;
+	$core_version_recommended = ELEMENTOR_PRO_RECOMMENDED_CORE_VERSION;
+
+	if ( ! elementor_pro_compare_major_version( $core_version, $core_version_required, '>=' ) ) {
 		add_action( 'admin_notices', 'elementor_pro_fail_load_out_of_date' );
 
 		return;
 	}
 
-	$elementor_version_recommendation = '3.13.0';
-	if ( ! version_compare( ELEMENTOR_VERSION, $elementor_version_recommendation, '>=' ) ) {
+	if ( ! elementor_pro_compare_major_version( $core_version, $core_version_recommended, '>=' ) ) {
 		add_action( 'admin_notices', 'elementor_pro_admin_notice_upgrade_recommendation' );
 	}
 
 	require ELEMENTOR_PRO_PATH . 'plugin.php';
+}
+
+function elementor_pro_compare_major_version( $left, $right, $operator ) {
+	$pattern = '/^(\d+\.\d+).*/';
+	$replace = '$1.0';
+
+	$left  = preg_replace( $pattern, $replace, $left );
+	$right = preg_replace( $pattern, $replace, $right );
+
+	return version_compare( $left, $right, $operator );
 }
 
 add_action( 'plugins_loaded', 'elementor_pro_load_plugin' );
@@ -136,13 +135,14 @@ function elementor_pro_fail_load_out_of_date() {
 	$file_path = 'elementor/elementor.php';
 
 	$upgrade_link = wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' ) . $file_path, 'upgrade-plugin_' . $file_path );
+
 	$message = sprintf(
-	/* translators: 1: Title opening tag, 2: Title closing tag */
-		esc_html__( '%1$sElementor Pro requires newer version of the Elementor plugin%2$s Update the Elementor plugin to reactivate the Elementor Pro plugin.', 'elementor-pro' ),
-		'<h3>',
-		'</h3>'
+		'<h3>%1$s</h3><p>%2$s <a href="%3$s" class="button-primary">%4$s</a></p>',
+		esc_html__( 'Elementor Pro requires newer version of the Elementor plugin', 'elementor-pro' ),
+		esc_html__( 'Update the Elementor plugin to reactivate the Elementor Pro plugin.', 'elementor-pro' ),
+		$upgrade_link,
+		esc_html__( 'Update Now', 'elementor-pro' )
 	);
-	$message .= '<p>' . sprintf( '<a href="%s" class="button-primary">%s</a>', $upgrade_link, esc_html__( 'Update Now', 'elementor-pro' ) ) . '</p>';
 
 	print_error( $message );
 }
@@ -155,13 +155,14 @@ function elementor_pro_admin_notice_upgrade_recommendation() {
 	$file_path = 'elementor/elementor.php';
 
 	$upgrade_link = wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' ) . $file_path, 'upgrade-plugin_' . $file_path );
+
 	$message = sprintf(
-	/* translators: 1: Title opening tag, 2: Title closing tag */
-		esc_html__( '%1$sDon’t miss out on the new version of Elementor%2$s Update to the latest version of Elementor to enjoy new features, better performance and compatibility.', 'elementor-pro' ),
-		'<h3>',
-		'</h3>'
+		'<h3>%1$s</h3><p>%2$s <a href="%3$s" class="button-primary">%4$s</a></p>',
+		esc_html__( 'Don’t miss out on the new version of Elementor', 'elementor-pro' ),
+		esc_html__( 'Update to the latest version of Elementor to enjoy new features, better performance and compatibility.', 'elementor-pro' ),
+		$upgrade_link,
+		esc_html__( 'Update Now', 'elementor-pro' )
 	);
-	$message .= '<p>' . sprintf( '<a href="%s" class="button-primary">%s</a>', $upgrade_link, esc_html__( 'Update Now', 'elementor-pro' ) ) . '</p>';
 
 	print_error( $message );
 }

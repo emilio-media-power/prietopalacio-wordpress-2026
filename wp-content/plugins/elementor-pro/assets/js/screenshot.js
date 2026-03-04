@@ -1,7 +1,6 @@
-/*! elementor-pro - v3.13.1 - 11-05-2023 */
+/*! elementor-pro - v3.35.0 - 11-02-2026 */
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
-var __webpack_exports__ = {};
 /*!**************************************************************!*\
   !*** ../modules/screenshots/assets/js/preview/screenshot.js ***!
   \**************************************************************/
@@ -19,7 +18,6 @@ class Screenshot extends elementorModules.ViewModule {
       excluded_external_css_urls: ['https://kit-pro.fontawesome.com'],
       external_images_urls: ['https://i.ytimg.com' // Youtube images domain.
       ],
-
       timeout: 15000,
       // Wait until screenshot taken or fail in 15 secs.
       render_timeout: 5000,
@@ -177,7 +175,7 @@ class Screenshot extends elementorModules.ViewModule {
   /**
    * Creates a png image.
    *
-   * @return {Promise<unknown>} -
+   * @return {Promise<unknown>} URI containing image data
    */
   createImage() {
     const pageLoadedPromise = new Promise(resolve => {
@@ -237,7 +235,7 @@ class Screenshot extends elementorModules.ViewModule {
    * Creates fake image element to get the size of the image later on.
    *
    * @param {string} dataUrl
-   * @return {Promise<HTMLImageElement>} -
+   * @return {Promise<HTMLImageElement>} Image Element
    */
   createImageElement(dataUrl) {
     const image = new Image();
@@ -251,7 +249,7 @@ class Screenshot extends elementorModules.ViewModule {
    * Crop the image to requested sizes.
    *
    * @param {HTMLImageElement} image
-   * @return {Promise<unknown>} -
+   * @return {Promise<unknown>} Canvas
    */
   cropCanvas(image) {
     const width = this.getSettings('crop.width');
@@ -269,7 +267,7 @@ class Screenshot extends elementorModules.ViewModule {
    * Send the image to the server.
    *
    * @param {HTMLCanvasElement} canvas
-   * @return {Promise<unknown>} -
+   * @return {Promise<unknown>} Screenshot URL
    */
   save(canvas) {
     return new Promise((resolve, reject) => {
@@ -313,7 +311,7 @@ class Screenshot extends elementorModules.ViewModule {
 
   /**
    * @param {string} url
-   * @return {string} -
+   * @return {string} Screenshot Proxy URL
    */
   getScreenshotProxyUrl(url) {
     return `${this.getSettings('home_url')}?screenshot_proxy&nonce=${this.getSettings('nonce')}&href=${url}`;
@@ -344,8 +342,7 @@ class Screenshot extends elementorModules.ViewModule {
    * @param {boolean} success
    * @param {string}  imageUrl
    */
-  screenshotDone(success) {
-    let imageUrl = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  screenshotDone(success, imageUrl = null) {
     clearTimeout(this.timeoutTimer);
     this.timeoutTimer = null;
 
@@ -367,8 +364,7 @@ class Screenshot extends elementorModules.ViewModule {
    * @param {any}     message
    * @param {string?} timerMethod
    */
-  log(message) {
-    let timerMethod = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'timeLog';
+  log(message, timerMethod = 'timeLog') {
     if (!this.getSettings('isDebug')) {
       return;
     }

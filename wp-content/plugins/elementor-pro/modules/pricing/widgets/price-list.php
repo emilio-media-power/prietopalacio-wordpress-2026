@@ -10,6 +10,7 @@ use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Text_Stroke;
 use Elementor\Repeater;
 use ElementorPro\Base\Base_Widget;
+use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -33,6 +34,28 @@ class Price_List extends Base_Widget {
 		return [ 'pricing', 'list', 'product', 'image', 'menu' ];
 	}
 
+	protected function is_dynamic_content(): bool {
+		return false;
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-price-list' ];
+	}
+
 	protected function register_controls() {
 		$this->start_controls_section(
 			'section_list',
@@ -51,6 +74,9 @@ class Price_List extends Base_Widget {
 				'type' => Controls_Manager::TEXT,
 				'dynamic' => [
 					'active' => true,
+				],
+				'ai' => [
+					'active' => false,
 				],
 			]
 		);
@@ -133,12 +159,181 @@ class Price_List extends Base_Widget {
 				'title_field' => '{{{ title }}}',
 			]
 		);
+
+		$this->add_control(
+			'title_tag',
+			[
+				'label' => esc_html__( 'Title HTML Tag', 'elementor-pro' ),
+				'type' => Controls_Manager::SELECT,
+				'options' => [
+					'h1' => 'H1',
+					'h2' => 'H2',
+					'h3' => 'H3',
+					'h4' => 'H4',
+					'h5' => 'H5',
+					'h6' => 'H6',
+					'div' => 'div',
+					'span' => 'span',
+					'p' => 'p',
+				],
+				'default' => 'span',
+				'separator' => 'before',
+			]
+		);
+
+		$this->add_control(
+			'description_tag',
+			[
+				'label' => esc_html__( 'Description HTML Tag', 'elementor-pro' ),
+				'type' => Controls_Manager::SELECT,
+				'options' => [
+					'h1' => 'H1',
+					'h2' => 'H2',
+					'h3' => 'H3',
+					'h4' => 'H4',
+					'h5' => 'H5',
+					'h6' => 'H6',
+					'div' => 'div',
+					'span' => 'span',
+					'p' => 'p',
+				],
+				'default' => 'p',
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Image_Size::get_type(),
+			[
+				'name' => 'image_size',
+				'default' => 'thumbnail',
+			]
+		);
+
 		$this->end_controls_section();
 
 		$this->start_controls_section(
 			'section_list_style',
 			[
 				'label' => esc_html__( 'List', 'elementor-pro' ),
+				'tab' => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_responsive_control(
+			'vertical_align',
+			[
+				'label' => esc_html__( 'Vertical Align', 'elementor-pro' ),
+				'type' => Controls_Manager::CHOOSE,
+				'options' => [
+					'top' => [
+						'title' => esc_html__( 'Top', 'elementor-pro' ),
+						'icon' => 'eicon-v-align-top',
+					],
+					'center' => [
+						'title' => esc_html__( 'Center', 'elementor-pro' ),
+						'icon' => 'eicon-v-align-middle',
+					],
+					'bottom' => [
+						'title' => esc_html__( 'Bottom', 'elementor-pro' ),
+						'icon' => 'eicon-v-align-bottom',
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .elementor-price-list-item' => 'align-items: {{VALUE}};',
+				],
+				'selectors_dictionary' => [
+					'top' => 'flex-start',
+					'bottom' => 'flex-end',
+				],
+				'default' => 'top',
+			]
+		);
+
+		$this->add_responsive_control(
+			'row_gap',
+			[
+				'label' => esc_html__( 'Space Between', 'elementor-pro' ),
+				'type' => Controls_Manager::SLIDER,
+				'separator' => 'before',
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'max' => 50,
+					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .elementor-price-list li:not(:last-child)' => 'margin-bottom: {{SIZE}}{{UNIT}};',
+				],
+				'default' => [
+					'size' => 20,
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'image_spacing',
+			[
+				'label' => esc_html__( 'Image Spacing', 'elementor-pro' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
+					],
+				],
+				'selectors' => [
+					'body.rtl {{WRAPPER}} .elementor-price-list-image' => 'padding-left: calc({{SIZE}}{{UNIT}}/2);',
+					'body.rtl {{WRAPPER}} .elementor-price-list-image + .elementor-price-list-text' => 'padding-right: calc({{SIZE}}{{UNIT}}/2);',
+					'body:not(.rtl) {{WRAPPER}} .elementor-price-list-image' => 'padding-right: calc({{SIZE}}{{UNIT}}/2);',
+					'body:not(.rtl) {{WRAPPER}} .elementor-price-list-image + .elementor-price-list-text' => 'padding-left: calc({{SIZE}}{{UNIT}}/2);',
+				],
+				'default' => [
+					'size' => 20,
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'content_spacing',
+			[
+				'label' => esc_html__( 'Content Spacing', 'elementor-pro' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .elementor-price-list-header' => 'margin-bottom: {{SIZE}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'section_content_style',
+			[
+				'label' => esc_html__( 'Content', 'elementor-pro' ),
 				'tab' => Controls_Manager::TAB_STYLE,
 			]
 		);
@@ -267,11 +462,11 @@ class Price_List extends Base_Widget {
 				'label' => esc_html__( 'Style', 'elementor-pro' ),
 				'type' => Controls_Manager::SELECT,
 				'options' => [
+					'none' => esc_html__( 'None', 'elementor-pro' ),
 					'solid' => esc_html__( 'Solid', 'elementor-pro' ),
 					'dotted' => esc_html__( 'Dotted', 'elementor-pro' ),
 					'dashed' => esc_html__( 'Dashed', 'elementor-pro' ),
 					'double' => esc_html__( 'Double', 'elementor-pro' ),
-					'none' => esc_html__( 'None', 'elementor-pro' ),
 				],
 				'default' => 'dotted',
 				'render_type' => 'template',
@@ -290,6 +485,12 @@ class Price_List extends Base_Widget {
 				'range' => [
 					'px' => [
 						'max' => 10,
+					],
+					'em' => [
+						'max' => 1,
+					],
+					'rem' => [
+						'max' => 1,
 					],
 				],
 				'condition' => [
@@ -331,6 +532,12 @@ class Price_List extends Base_Widget {
 					'px' => [
 						'max' => 40,
 					],
+					'em' => [
+						'max' => 4,
+					],
+					'rem' => [
+						'max' => 4,
+					],
 				],
 				'condition' => [
 					'separator_style!' => 'none',
@@ -348,15 +555,6 @@ class Price_List extends Base_Widget {
 			[
 				'label' => esc_html__( 'Image', 'elementor-pro' ),
 				'tab' => Controls_Manager::TAB_STYLE,
-				'show_label' => false,
-			]
-		);
-
-		$this->add_group_control(
-			Group_Control_Image_Size::get_type(),
-			[
-				'name' => 'image_size',
-				'default' => 'thumbnail',
 			]
 		);
 
@@ -369,94 +567,6 @@ class Price_List extends Base_Widget {
 				'selectors' => [
 					'{{WRAPPER}} .elementor-price-list-image img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
-			]
-		);
-
-		$this->add_control(
-			'image_spacing',
-			[
-				'label' => esc_html__( 'Spacing', 'elementor-pro' ),
-				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
-				'range' => [
-					'px' => [
-						'max' => 50,
-					],
-				],
-				'selectors' => [
-					'body.rtl {{WRAPPER}} .elementor-price-list-image' => 'padding-left: calc({{SIZE}}{{UNIT}}/2);',
-					'body.rtl {{WRAPPER}} .elementor-price-list-image + .elementor-price-list-text' => 'padding-right: calc({{SIZE}}{{UNIT}}/2);',
-					'body:not(.rtl) {{WRAPPER}} .elementor-price-list-image' => 'padding-right: calc({{SIZE}}{{UNIT}}/2);',
-					'body:not(.rtl) {{WRAPPER}} .elementor-price-list-image + .elementor-price-list-text' => 'padding-left: calc({{SIZE}}{{UNIT}}/2);',
-				],
-				'default' => [
-					'size' => 20,
-				],
-			]
-		);
-
-		$this->end_controls_section();
-
-		$this->start_controls_section(
-			'section_item_style',
-			[
-				'label' => esc_html__( 'Item', 'elementor-pro' ),
-				'tab' => Controls_Manager::TAB_STYLE,
-				'show_label' => false,
-			]
-		);
-
-		$this->add_control(
-			'row_gap',
-			[
-				'label' => esc_html__( 'Rows Gap', 'elementor-pro' ),
-				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
-				'range' => [
-					'px' => [
-						'max' => 50,
-					],
-					'em' => [
-						'max' => 5,
-						'step' => 0.1,
-					],
-				],
-				'selectors' => [
-					'{{WRAPPER}} .elementor-price-list li:not(:last-child)' => 'margin-bottom: {{SIZE}}{{UNIT}};',
-				],
-				'default' => [
-					'size' => 20,
-				],
-			]
-		);
-
-		$this->add_control(
-			'vertical_align',
-			[
-				'label' => esc_html__( 'Vertical Align', 'elementor-pro' ),
-				'type' => Controls_Manager::CHOOSE,
-				'options' => [
-					'top' => [
-						'title' => esc_html__( 'Top', 'elementor-pro' ),
-						'icon' => 'eicon-v-align-top',
-					],
-					'center' => [
-						'title' => esc_html__( 'Center', 'elementor-pro' ),
-						'icon' => 'eicon-v-align-middle',
-					],
-					'bottom' => [
-						'title' => esc_html__( 'Bottom', 'elementor-pro' ),
-						'icon' => 'eicon-v-align-bottom',
-					],
-				],
-				'selectors' => [
-					'{{WRAPPER}} .elementor-price-list-item' => 'align-items: {{VALUE}};',
-				],
-				'selectors_dictionary' => [
-					'top' => 'flex-start',
-					'bottom' => 'flex-end',
-				],
-				'default' => 'top',
 			]
 		);
 
@@ -473,7 +583,11 @@ class Price_List extends Base_Widget {
 			$image_src = $image_src[0];
 		}
 
-		return sprintf( '<img src="%s" alt="%s" loading="lazy" />', $image_src, $item['title'] );
+		return sprintf(
+			'<img src="%s" alt="%s" loading="lazy" />',
+			esc_url( $image_src ),
+			esc_attr( wp_kses_post( $item['title'] ) )
+		);
 	}
 
 	private function render_item_header( $item ) {
@@ -533,9 +647,9 @@ class Price_List extends Base_Widget {
 				<?php if ( ! empty( $item['title'] ) || ! empty( $item['price'] ) ) : ?>
 					<div class="elementor-price-list-header">
 					<?php if ( ! empty( $item['title'] ) ) : ?>
-						<span <?php $this->print_render_attribute_string( $title_repeater_setting_key ); ?>>
+						<<?php Utils::print_validated_html_tag( $settings['title_tag'] ); ?> <?php $this->print_render_attribute_string( $title_repeater_setting_key ); ?>>
 							<?php $this->print_unescaped_setting( 'title', 'price_list', $index ); ?>
-						</span>
+						</<?php Utils::print_validated_html_tag( $settings['title_tag'] ); ?>>
 					<?php endif; ?>
 						<?php if ( 'none' != $settings['separator_style'] ) : ?>
 							<span class="elementor-price-list-separator"></span>
@@ -546,9 +660,9 @@ class Price_List extends Base_Widget {
 				</div>
 				<?php endif; ?>
 					<?php if ( ! empty( $item['item_description'] ) ) : ?>
-						<p <?php $this->print_render_attribute_string( $description_repeater_setting_key ); ?>>
+						<<?php Utils::print_validated_html_tag( $settings['description_tag'] ); ?> <?php $this->print_render_attribute_string( $description_repeater_setting_key ); ?>>
 							<?php $this->print_unescaped_setting( 'item_description', 'price_list', $index ); ?>
-						</p>
+						</<?php Utils::print_validated_html_tag( $settings['description_tag'] ); ?>>
 					<?php endif; ?>
 			</div>
 				<?php
@@ -575,12 +689,15 @@ class Price_List extends Base_Widget {
 		?>
 		<ul class="elementor-price-list">
 			<#
+				var titleTag = elementor.helpers.validateHTMLTag( settings.title_tag );
+				var descriptionTag = elementor.helpers.validateHTMLTag( settings.description_tag );
+
 				for ( var i in settings.price_list ) {
 					var item = settings.price_list[i],
 						item_open_wrap = '<li class="elementor-price-list-item">',
 						item_close_wrap = '</li>';
-					if ( item.link.url ) {
-						item_open_wrap = '<li><a href="' + item.link.url + '" class="elementor-price-list-item">';
+					if ( item.link?.url ) {
+						item_open_wrap = '<li><a href="' + elementor.helpers.sanitizeUrl( item.link?.url ) + '" class="elementor-price-list-item">';
 						item_close_wrap = '</a></li>';
 					}
 
@@ -613,7 +730,7 @@ class Price_List extends Base_Widget {
 								<div class="elementor-price-list-header">
 
 								<# if ( ! _.isEmpty( item.title ) ) { #>
-									<span class="elementor-price-list-title">{{{ item.title }}}</span>
+									<{{ titleTag }} class="elementor-price-list-title">{{{ item.title }}}</{{ titleTag }}>
 								<# } #>
 
 								<# if ( 'none' != settings.separator_style ) { #>
@@ -628,7 +745,7 @@ class Price_List extends Base_Widget {
 							<# } #>
 
 							<# if ( ! _.isEmpty( item.item_description ) ) { #>
-								<p class="elementor-price-list-description">{{{ item.item_description }}}</p>
+								<{{descriptionTag}} class="elementor-price-list-description">{{{ item.item_description }}}</{{descriptionTag}}>
 							<# } #>
 
 						</div>

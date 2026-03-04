@@ -164,6 +164,8 @@ class Slack extends Action_Base {
 			$element['slack_webhook'],
 			$element['slack_channel']
 		);
+
+		return $element;
 	}
 
 	public function run( $record, $ajax_handler ) {
@@ -236,7 +238,7 @@ class Slack extends Action_Base {
 
 		$webhook_data = apply_filters( 'elementor_pro/forms/slack/webhook_args', $webhook_data );
 
-		$response = wp_remote_post( $settings['slack_webhook'], [
+		$response = wp_safe_remote_post( $settings['slack_webhook'], [
 			'headers' => [
 				'Content-Type' => 'application/json',
 			],

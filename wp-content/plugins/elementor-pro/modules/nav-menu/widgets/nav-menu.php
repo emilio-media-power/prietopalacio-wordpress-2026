@@ -43,6 +43,24 @@ class Nav_Menu extends Base_Widget {
 		return [ 'smartmenus' ];
 	}
 
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-nav-menu' ];
+	}
+
 	protected function get_nav_menu_index() {
 		return $this->nav_menu_index++;
 	}
@@ -65,6 +83,15 @@ class Nav_Menu extends Base_Widget {
 			'section_layout',
 			[
 				'label' => esc_html__( 'Layout', 'elementor-pro' ),
+			]
+		);
+
+		$this->add_control(
+			'menu_name',
+			[
+				'label' => esc_html__( 'Menu Name', 'elementor-pro' ),
+				'type' => Controls_Manager::TEXT,
+				'default' => esc_html__( 'Menu', 'elementor-pro' ),
 			]
 		);
 
@@ -92,16 +119,16 @@ class Nav_Menu extends Base_Widget {
 			$this->add_control(
 				'menu',
 				[
-					'type' => Controls_Manager::RAW_HTML,
-					'raw' => '<strong>' . esc_html__( 'There are no menus in your site.', 'elementor-pro' ) . '</strong><br>' .
-							sprintf(
-								/* translators: 1: Link opening tag, 2: Link closing tag. */
-								esc_html__( 'Go to the %1$sMenus screen%2$s to create one.', 'elementor-pro' ),
-								sprintf( '<a href="%s" target="_blank">', admin_url( 'nav-menus.php?action=edit&menu=0' ) ),
-								'</a>'
-							),
+					'type' => Controls_Manager::ALERT,
+					'alert_type' => 'info',
+					'heading' => esc_html__( 'There are no menus in your site.', 'elementor-pro' ),
+					'content' => sprintf(
+						/* translators: 1: Link opening tag, 2: Link closing tag. */
+						esc_html__( 'Go to the %1$sMenus screen%2$s to create one.', 'elementor-pro' ),
+						sprintf( '<a href="%s" target="_blank">', admin_url( 'nav-menus.php?action=edit&menu=0' ) ),
+						'</a>'
+					),
 					'separator' => 'after',
-					'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
 				]
 			);
 		}
@@ -121,28 +148,36 @@ class Nav_Menu extends Base_Widget {
 			]
 		);
 
+		$start = is_rtl() ? 'end' : 'start';
+		$end = is_rtl() ? 'start' : 'end';
+
 		$this->add_control(
 			'align_items',
 			[
 				'label' => esc_html__( 'Alignment', 'elementor-pro' ),
 				'type' => Controls_Manager::CHOOSE,
 				'options' => [
-					'left' => [
-						'title' => esc_html__( 'Left', 'elementor-pro' ),
-						'icon' => 'eicon-h-align-left',
+					'start' => [
+						'title' => esc_html__( 'Start', 'elementor-pro' ),
+						'icon' => "eicon-align-$start-h",
 					],
 					'center' => [
 						'title' => esc_html__( 'Center', 'elementor-pro' ),
-						'icon' => 'eicon-h-align-center',
+						'icon' => 'eicon-align-center-h',
 					],
-					'right' => [
-						'title' => esc_html__( 'Right', 'elementor-pro' ),
-						'icon' => 'eicon-h-align-right',
+					'end' => [
+						'title' => esc_html__( 'End', 'elementor-pro' ),
+						'icon' => "eicon-align-$end-h",
 					],
 					'justify' => [
 						'title' => esc_html__( 'Stretch', 'elementor-pro' ),
-						'icon' => 'eicon-h-align-stretch',
+						'icon' => 'eicon-align-stretch-h',
 					],
+				],
+				// For BC
+				'classes_dictionary' => [
+					'left' => is_rtl() ? 'end' : 'start',
+					'right' => is_rtl() ? 'start' : 'end',
 				],
 				'prefix_class' => 'elementor-nav-menu__align-',
 				'condition' => [
@@ -360,7 +395,7 @@ class Nav_Menu extends Base_Widget {
 		$this->add_control(
 			'text_align',
 			[
-				'label' => esc_html__( 'Text  Align', 'elementor-pro' ),
+				'label' => esc_html__( 'Text Align', 'elementor-pro' ),
 				'type' => Controls_Manager::SELECT,
 				'default' => 'aside',
 				'options' => [
@@ -761,6 +796,12 @@ class Nav_Menu extends Base_Widget {
 						'min' => 1,
 						'max' => 20,
 					],
+					'em' => [
+						'max' => 2,
+					],
+					'rem' => [
+						'max' => 2,
+					],
 				],
 				'condition' => $divider_condition,
 				'selectors' => [
@@ -779,6 +820,12 @@ class Nav_Menu extends Base_Widget {
 					'px' => [
 						'min' => 1,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 					'%' => [
 						'min' => 1,
@@ -825,6 +872,12 @@ class Nav_Menu extends Base_Widget {
 					'px' => [
 						'max' => 30,
 					],
+					'em' => [
+						'max' => 3,
+					],
+					'rem' => [
+						'max' => 3,
+					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .e--pointer-framed .elementor-item:before' => 'border-width: {{SIZE}}{{UNIT}}',
@@ -853,6 +906,12 @@ class Nav_Menu extends Base_Widget {
 					'px' => [
 						'max' => 50,
 					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
+					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-nav-menu--main .elementor-item' => 'padding-left: {{SIZE}}{{UNIT}}; padding-right: {{SIZE}}{{UNIT}}',
@@ -870,6 +929,12 @@ class Nav_Menu extends Base_Widget {
 					'px' => [
 						'max' => 50,
 					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
+					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-nav-menu--main .elementor-item' => 'padding-top: {{SIZE}}{{UNIT}}; padding-bottom: {{SIZE}}{{UNIT}}',
@@ -886,6 +951,12 @@ class Nav_Menu extends Base_Widget {
 				'range' => [
 					'px' => [
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -949,7 +1020,7 @@ class Nav_Menu extends Base_Widget {
 				'type' => Controls_Manager::COLOR,
 				'default' => '',
 				'selectors' => [
-					'{{WRAPPER}} .elementor-nav-menu--dropdown a, {{WRAPPER}} .elementor-menu-toggle' => 'color: {{VALUE}}',
+					'{{WRAPPER}} .elementor-nav-menu--dropdown a, {{WRAPPER}} .elementor-menu-toggle' => 'color: {{VALUE}}; fill: {{VALUE}};',
 				],
 			]
 		);
@@ -963,7 +1034,6 @@ class Nav_Menu extends Base_Widget {
 				'selectors' => [
 					'{{WRAPPER}} .elementor-nav-menu--dropdown' => 'background-color: {{VALUE}}',
 				],
-				'separator' => 'none',
 			]
 		);
 
@@ -984,9 +1054,11 @@ class Nav_Menu extends Base_Widget {
 				'default' => '',
 				'selectors' => [
 					'{{WRAPPER}} .elementor-nav-menu--dropdown a:hover,
+					{{WRAPPER}} .elementor-nav-menu--dropdown a:focus,
 					{{WRAPPER}} .elementor-nav-menu--dropdown a.elementor-item-active,
 					{{WRAPPER}} .elementor-nav-menu--dropdown a.highlighted,
-					{{WRAPPER}} .elementor-menu-toggle:hover' => 'color: {{VALUE}}',
+					{{WRAPPER}} .elementor-menu-toggle:hover,
+					{{WRAPPER}} .elementor-menu-toggle:focus' => 'color: {{VALUE}}',
 				],
 			]
 		);
@@ -999,10 +1071,10 @@ class Nav_Menu extends Base_Widget {
 				'default' => '',
 				'selectors' => [
 					'{{WRAPPER}} .elementor-nav-menu--dropdown a:hover,
+					{{WRAPPER}} .elementor-nav-menu--dropdown a:focus,
 					{{WRAPPER}} .elementor-nav-menu--dropdown a.elementor-item-active,
 					{{WRAPPER}} .elementor-nav-menu--dropdown a.highlighted' => 'background-color: {{VALUE}}',
 				],
-				'separator' => 'none',
 			]
 		);
 
@@ -1036,7 +1108,6 @@ class Nav_Menu extends Base_Widget {
 				'selectors' => [
 					'{{WRAPPER}} .elementor-nav-menu--dropdown a.elementor-item-active' => 'background-color: {{VALUE}}',
 				],
-				'separator' => 'none',
 			]
 		);
 
@@ -1096,7 +1167,13 @@ class Nav_Menu extends Base_Widget {
 			[
 				'label' => esc_html__( 'Horizontal Padding', 'elementor-pro' ),
 				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'size_units' => [ 'px', 'em', 'rem', 'vw', 'custom' ],
+				'range' => [
+					'vw' => [
+						'min' => 0,
+						'max' => 10,
+					],
+				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-nav-menu--dropdown a' => 'padding-left: {{SIZE}}{{UNIT}}; padding-right: {{SIZE}}{{UNIT}}',
 				],
@@ -1110,10 +1187,20 @@ class Nav_Menu extends Base_Widget {
 			[
 				'label' => esc_html__( 'Vertical Padding', 'elementor-pro' ),
 				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'size_units' => [ 'px', 'em', 'rem', 'vh', 'custom' ],
 				'range' => [
 					'px' => [
 						'max' => 50,
+					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
+					],
+					'vh' => [
+						'min' => 0,
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -1151,7 +1238,10 @@ class Nav_Menu extends Base_Widget {
 						'max' => 50,
 					],
 					'em' => [
-						'max' => 2,
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
 					],
 				],
 				'selectors' => [
@@ -1173,6 +1263,14 @@ class Nav_Menu extends Base_Widget {
 					'px' => [
 						'min' => -100,
 						'max' => 100,
+					],
+					'em' => [
+						'min' => -10,
+						'max' => 10,
+					],
+					'rem' => [
+						'min' => -10,
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -1242,8 +1340,8 @@ class Nav_Menu extends Base_Widget {
 				'label' => esc_html__( 'Color', 'elementor-pro' ),
 				'type' => Controls_Manager::COLOR,
 				'selectors' => [
-					'{{WRAPPER}} div.elementor-menu-toggle:hover' => 'color: {{VALUE}}', // Harder selector to override text color control
-					'{{WRAPPER}} div.elementor-menu-toggle:hover svg' => 'fill: {{VALUE}}',
+					'{{WRAPPER}} div.elementor-menu-toggle:hover, {{WRAPPER}} div.elementor-menu-toggle:focus' => 'color: {{VALUE}}', // Harder selector to override text color control
+					'{{WRAPPER}} div.elementor-menu-toggle:hover svg, {{WRAPPER}} div.elementor-menu-toggle:focus svg' => 'fill: {{VALUE}}',
 				],
 			]
 		);
@@ -1254,7 +1352,7 @@ class Nav_Menu extends Base_Widget {
 				'label' => esc_html__( 'Background Color', 'elementor-pro' ),
 				'type' => Controls_Manager::COLOR,
 				'selectors' => [
-					'{{WRAPPER}} .elementor-menu-toggle:hover' => 'background-color: {{VALUE}}',
+					'{{WRAPPER}} .elementor-menu-toggle:hover, {{WRAPPER}} .elementor-menu-toggle:focus' => 'background-color: {{VALUE}}',
 				],
 			]
 		);
@@ -1268,9 +1366,16 @@ class Nav_Menu extends Base_Widget {
 			[
 				'label' => esc_html__( 'Size', 'elementor-pro' ),
 				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
 						'min' => 15,
+					],
+					'em' => [
+						'max' => 1.5,
+					],
+					'rem' => [
+						'max' => 1.5,
 					],
 				],
 				'selectors' => [
@@ -1291,6 +1396,9 @@ class Nav_Menu extends Base_Widget {
 						'max' => 20,
 					],
 					'em' => [
+						'max' => 2,
+					],
+					'rem' => [
 						'max' => 2,
 					],
 				],
@@ -1325,7 +1433,7 @@ class Nav_Menu extends Base_Widget {
 
 		// Determine the submenu icon markup.
 		if ( Plugin::elementor()->experiments->is_feature_active( 'e_font_icon_svg' ) ) {
-			$icon_classes = [];
+			$icon_classes = [ 'aria-hidden' => 'true' ];
 
 			if ( false !== strpos( $frontend_settings['submenu_icon']['value'], 'chevron-down' ) ) {
 				$icon_classes['class'] = 'fa-svg-chevron-down';
@@ -1333,7 +1441,7 @@ class Nav_Menu extends Base_Widget {
 
 			$icon_content = Icons_Manager::render_font_icon( $frontend_settings['submenu_icon'], $icon_classes );
 		} else {
-			$icon_content = sprintf( '<i class="%s"></i>', $frontend_settings['submenu_icon']['value'] );
+			$icon_content = sprintf( '<i class="%s" aria-hidden="true"></i>', esc_attr( $frontend_settings['submenu_icon']['value'] ) );
 		}
 
 		// Passing the entire icon markup to the frontend settings because it can be either <i> or <svg> tag.
@@ -1386,6 +1494,10 @@ class Nav_Menu extends Base_Widget {
 
 		if ( empty( $menu_html ) ) {
 			return;
+		}
+
+		if ( $settings['menu_name'] ) {
+			$this->add_render_attribute( 'main-menu', 'aria-label', $settings['menu_name'] );
 		}
 
 		$is_migrated = isset( $settings['__fa4_migrated']['submenu_icon'] );
@@ -1477,7 +1589,7 @@ class Nav_Menu extends Base_Widget {
 			'class' => 'elementor-menu-toggle',
 			'role' => 'button',
 			'tabindex' => '0',
-			'aria-label' => esc_html__( 'Menu Toggle', 'elementor-pro' ),
+			'aria-label' => esc_attr__( 'Menu Toggle', 'elementor-pro' ),
 			'aria-expanded' => 'false',
 		] );
 
@@ -1549,7 +1661,6 @@ class Nav_Menu extends Base_Widget {
 				echo '</span>';
 			}
 			?>
-			<span class="elementor-screen-only"><?php echo esc_html__( 'Menu', 'elementor-pro' ); ?></span>
 		</div>
 		<?php
 	}

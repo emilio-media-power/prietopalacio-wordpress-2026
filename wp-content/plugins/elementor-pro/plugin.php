@@ -1,11 +1,12 @@
 <?php
 namespace ElementorPro;
 
+use ElementorPro\Core\Maintenance;
+use ElementorPro\Core\PHP_Api;
 use ElementorPro\Core\Admin\Admin;
 use ElementorPro\Core\App\App;
 use ElementorPro\Core\Connect;
 use ElementorPro\Core\Compatibility\Compatibility;
-use Elementor\Core\Responsive\Files\Frontend as FrontendFile;
 use Elementor\Utils;
 use ElementorPro\Core\Editor\Editor;
 use ElementorPro\Core\Integrations\Integrations_Manager;
@@ -15,6 +16,7 @@ use ElementorPro\Core\Preview\Preview;
 use ElementorPro\Core\Upgrade\Manager as UpgradeManager;
 use ElementorPro\License\API;
 use ElementorPro\License\Updater;
+use Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -87,6 +89,11 @@ class Plugin {
 	public $updater;
 
 	/**
+	 * @var PHP_Api
+	 */
+	public $php_api;
+
+	/**
 	 * Throw error on object clone
 	 *
 	 * The whole idea of the singleton design pattern is that there is a single
@@ -128,7 +135,7 @@ class Plugin {
 	/**
 	 * @return Plugin
 	 */
-	public static function instance() {
+	public static function instance(): Plugin {
 		if ( is_null( self::$_instance ) ) {
 			self::$_instance = new self();
 		}
@@ -171,30 +178,9 @@ class Plugin {
 		}
 	}
 
-	public function enqueue_styles() {
-		$suffix = $this->get_assets_suffix();
-
-		$direction_suffix = is_rtl() ? '-rtl' : '';
-
-		$frontend_file_name_base = $this->is_optimized_css_mode() ? 'frontend-lite' : 'frontend';
-
-		$frontend_file_name = $frontend_file_name_base . $direction_suffix . $suffix . '.css';
-
-		$has_custom_file = self::elementor()->breakpoints->has_custom_breakpoints();
-
-		$frontend_file_url = $this->get_frontend_file_url( $frontend_file_name, $has_custom_file );
-
-		wp_enqueue_style(
-			'elementor-pro',
-			$frontend_file_url,
-			[],
-			$has_custom_file ? null : ELEMENTOR_PRO_VERSION
-		);
-	}
-
-	public function get_frontend_file_url( $frontend_file_name, $custom_file ) {
+	public static function get_frontend_file_url( $frontend_file_name, $custom_file ) {
 		if ( $custom_file ) {
-			$frontend_file = $this->get_frontend_file( $frontend_file_name );
+			$frontend_file = self::get_frontend_file( $frontend_file_name );
 
 			$frontend_file_url = $frontend_file->get_url();
 		} else {
@@ -204,9 +190,9 @@ class Plugin {
 		return $frontend_file_url;
 	}
 
-	public function get_frontend_file_path( $frontend_file_name, $custom_file ) {
+	public static function get_frontend_file_path( $frontend_file_name, $custom_file ) {
 		if ( $custom_file ) {
-			$frontend_file = $this->get_frontend_file( $frontend_file_name );
+			$frontend_file = self::get_frontend_file( $frontend_file_name );
 
 			$frontend_file_path = $frontend_file->get_path();
 		} else {
@@ -215,6 +201,12 @@ class Plugin {
 
 		return $frontend_file_path;
 	}
+
+	/**
+	 * @deprecated 3.26.0
+	 * @return void
+	 */
+	public function enqueue_styles(): void {}
 
 	public function enqueue_frontend_scripts() {
 		$suffix = $this->get_assets_suffix();
@@ -229,11 +221,7 @@ class Plugin {
 
 		wp_set_script_translations( 'elementor-pro-frontend', 'elementor-pro', ELEMENTOR_PRO_PATH . 'languages' );
 
-		if ( self::elementor()->experiments->is_feature_active( 'e_optimized_assets_loading' ) ) {
-			wp_enqueue_script( 'pro-elements-handlers' );
-		} else {
-			wp_enqueue_script( 'pro-preloaded-elements-handlers' );
-		}
+		wp_enqueue_script( 'pro-elements-handlers' );
 
 		$assets_url = ELEMENTOR_PRO_ASSETS_URL;
 
@@ -255,6 +243,9 @@ class Plugin {
 			'urls' => [
 				'assets' => $assets_url,
 				'rest' => get_rest_url(),
+			],
+			'settings' => [
+				'lazy_load_background_images' => ( '1' === get_option( 'elementor_lazy_load_background_images', '1' ) ),
 			],
 		];
 
@@ -278,14 +269,10 @@ class Plugin {
 			'ElementorProFrontendConfig',
 			$locale_settings
 		);
-
-		if ( $this->is_assets_loader_exist() ) {
-			$this->register_assets();
-		}
 	}
 
 	public function register_frontend_scripts() {
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$suffix = $this->get_assets_suffix();
 
 		wp_register_script(
 			'elementor-pro-webpack-runtime',
@@ -306,40 +293,34 @@ class Plugin {
 		);
 
 		wp_register_script(
-			'pro-preloaded-elements-handlers',
-			ELEMENTOR_PRO_URL . 'assets/js/preloaded-elements-handlers' . $suffix . '.js',
-			[
-				'elementor-frontend',
-			],
-			ELEMENTOR_PRO_VERSION,
-			true
-		);
-
-		wp_register_script(
 			'smartmenus',
 			ELEMENTOR_PRO_URL . 'assets/lib/smartmenus/jquery.smartmenus' . $suffix . '.js',
 			[
 				'jquery',
 			],
-			'1.0.1',
+			'1.2.1',
 			true
 		);
 
-		if ( ! $this->is_assets_loader_exist() ) {
-			wp_register_script(
-				'elementor-sticky',
-				ELEMENTOR_PRO_URL . 'assets/lib/sticky/jquery.sticky' . $suffix . '.js',
-				[
-					'jquery',
-				],
-				ELEMENTOR_PRO_VERSION,
-				true
-			);
+		$sticky_handle = $this->is_assets_loader_exist() ? 'e-sticky' : 'elementor-sticky';
+
+		wp_register_script(
+			$sticky_handle,
+			ELEMENTOR_PRO_URL . 'assets/lib/sticky/jquery.sticky' . $suffix . '.js',
+			[
+				'jquery',
+			],
+			ELEMENTOR_PRO_VERSION,
+			true
+		);
+
+		if ( $this->is_assets_loader_exist() ) {
+			$this->register_assets();
 		}
 	}
 
 	public function register_preview_scripts() {
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$suffix = $this->get_assets_suffix();
 
 		wp_enqueue_script(
 			'elementor-pro-preview',
@@ -404,7 +385,7 @@ class Plugin {
 		return $frontend_depends;
 	}
 
-	private function get_responsive_templates_path() {
+	private static function get_responsive_templates_path() {
 		return ELEMENTOR_PRO_ASSETS_PATH . 'css/templates/';
 	}
 
@@ -412,6 +393,16 @@ class Plugin {
 		// Core >= 3.2.0
 		if ( isset( $settings['library_connect']['current_access_level'] ) ) {
 			$settings['library_connect']['current_access_level'] = API::get_library_access_level();
+		}
+
+		// Core >= 3.18.0
+		if ( isset( $settings['library_connect']['current_access_tier'] ) ) {
+			$settings['library_connect']['current_access_tier'] = API::get_access_tier();
+		}
+
+		// Core >= 3.32.0
+		if ( isset( $settings['library_connect']['plan_type'] ) ) {
+			$settings['library_connect']['plan_type'] = API::get_plan_type();
 		}
 
 		return $settings;
@@ -424,7 +415,6 @@ class Plugin {
 		add_action( 'elementor/preview/enqueue_scripts', [ $this, 'register_preview_scripts' ] );
 
 		add_action( 'elementor/frontend/before_enqueue_scripts', [ $this, 'enqueue_frontend_scripts' ] );
-		add_action( 'elementor/frontend/after_enqueue_styles', [ $this, 'enqueue_styles' ] );
 
 		add_filter( 'elementor/core/breakpoints/get_stylesheet_template', [ $this, 'get_responsive_stylesheet_templates' ] );
 		add_action( 'elementor/document/save_version', [ $this, 'on_document_save_version' ] );
@@ -432,12 +422,10 @@ class Plugin {
 		add_filter( 'elementor/editor/localize_settings', function ( $settings ) {
 			return $this->add_subscription_template_access_level_to_settings( $settings );
 		}, 11 /** After Elementor Core (Library) */ );
-	}
 
-	private function is_optimized_css_mode() {
-		$is_optimized_css_loading = self::elementor()->experiments->is_feature_active( 'e_optimized_css_loading' );
-
-		return ! Utils::is_script_debug() && $is_optimized_css_loading && ! self::elementor()->preview->is_preview_mode();
+		add_filter( 'elementor/common/localize_settings', function ( $settings ) {
+			return $this->add_subscription_template_access_level_to_settings( $settings );
+		}, 11 /** After Elementor Core (Library) */ );
 	}
 
 	private function get_assets() {
@@ -470,6 +458,7 @@ class Plugin {
 
 	/**
 	 * Plugin constructor.
+	 * @throws Exception
 	 */
 	private function __construct() {
 		spl_autoload_register( [ $this, 'autoload' ] );
@@ -488,6 +477,8 @@ class Plugin {
 
 		$this->license_admin = new License\Admin();
 
+		$this->php_api = new PHP_Api();
+
 		if ( is_user_logged_in() ) {
 			$this->integrations = new Integrations_Manager(); // TODO: This one is safe to move out of the condition.
 
@@ -500,16 +491,18 @@ class Plugin {
 			$this->license_admin->register_actions();
 		}
 
+		Maintenance::init();
+
 		// The `Updater` class is responsible for adding some updates related filters, including auto updates, and since
 		// WP crons don't run on admin mode, it should not depend on it.
 		$this->updater = new Updater();
 	}
 
 	private function get_assets_suffix() {
-		return defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		return Utils::is_script_debug() ? '' : '.min';
 	}
 
-	private function get_frontend_file( $frontend_file_name ) {
+	private static function get_frontend_file( $frontend_file_name ) {
 		$template_file_path = self::get_responsive_templates_path() . $frontend_file_name;
 
 		return self::elementor()->frontend->get_frontend_file( $frontend_file_name, 'custom-pro-', $template_file_path );

@@ -7,6 +7,7 @@ use Elementor\Group_Control_Typography;
 use Elementor\Icons_Manager;
 use Elementor\Repeater;
 use Elementor\Utils;
+use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -30,21 +31,36 @@ class Reviews extends Base {
 		return [ 'reviews', 'social', 'rating', 'testimonial', 'carousel' ];
 	}
 
-	public function get_inline_css_depends() {
-		$slides = $this->get_settings_for_display( 'slides' );
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
 
-		foreach ( $slides as $slide ) {
-			if ( $slide['rating'] ) {
-				return [
-					[
-						'name' => 'star-rating',
-						'is_core_dependency' => true,
-					],
-				];
-			}
-		}
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'e-swiper', 'widget-testimonial-carousel', 'widget-reviews', 'widget-star-rating', 'widget-carousel-module-base' ];
+	}
 
-		return [];
+	/**
+	 * Get script dependencies.
+	 *
+	 * Retrieve the list of script dependencies the widget requires.
+	 *
+	 * @since 3.27.0
+	 * @access public
+	 *
+	 * @return array Widget script dependencies.
+	 */
+	public function get_script_depends(): array {
+		return [ 'swiper' ];
 	}
 
 	protected function register_controls() {
@@ -92,13 +108,18 @@ class Reviews extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
-					'{{WRAPPER}} .elementor-testimonial__header' => 'padding-bottom: calc({{SIZE}}{{UNIT}} / 2)',
-					'{{WRAPPER}} .elementor-testimonial__content' => 'padding-top: calc({{SIZE}}{{UNIT}} / 2)',
+					'{{WRAPPER}} .elementor-testimonial__header' => 'padding-block-end: calc( {{SIZE}}{{UNIT}} / 2 )',
+					'{{WRAPPER}} .elementor-testimonial__content' => 'padding-block-start: calc( {{SIZE}}{{UNIT}} / 2 )',
 				],
 			]
 		);
@@ -123,7 +144,7 @@ class Reviews extends Base {
 				'label' => esc_html__( 'Color', 'elementor-pro' ),
 				'type' => Controls_Manager::COLOR,
 				'selectors' => [
-					'{{WRAPPER}} .elementor-testimonial__header' => 'border-bottom-color: {{VALUE}}',
+					'{{WRAPPER}} .elementor-testimonial__header' => 'border-block-end-color: {{VALUE}}',
 				],
 				'condition' => [
 					'show_separator!' => '',
@@ -139,15 +160,20 @@ class Reviews extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 20,
+					],
+					'em' => [
+						'max' => 2,
+					],
+					'rem' => [
+						'max' => 2,
 					],
 				],
 				'condition' => [
 					'show_separator!' => '',
 				],
 				'selectors' => [
-					'{{WRAPPER}} .elementor-testimonial__header' => 'border-bottom-width: {{SIZE}}{{UNIT}}',
+					'{{WRAPPER}} .elementor-testimonial__header' => 'border-block-end-width: {{SIZE}}{{UNIT}}',
 				],
 			]
 		);
@@ -274,8 +300,13 @@ class Reviews extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
-						'max' => 70,
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -292,13 +323,17 @@ class Reviews extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
-					'body:not(.rtl) {{WRAPPER}} .elementor-testimonial__image + cite' => 'margin-left: {{SIZE}}{{UNIT}}; margin-right: 0;',
-					'body.rtl {{WRAPPER}} .elementor-testimonial__image + cite' => 'margin-right: {{SIZE}}{{UNIT}}; margin-left:0;',
+					'{{WRAPPER}} .elementor-testimonial__image + cite' => 'margin-inline-start: {{SIZE}}{{UNIT}}; margin-inline-end: 0;',
 				],
 			]
 		);
@@ -361,8 +396,13 @@ class Reviews extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -425,8 +465,13 @@ class Reviews extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -444,13 +489,17 @@ class Reviews extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 50,
+					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
 					],
 				],
 				'selectors' => [
-					'body:not(.rtl) {{WRAPPER}} .elementor-star-rating i:not(:last-of-type)' => 'margin-right: {{SIZE}}{{UNIT}}',
-					'body.rtl {{WRAPPER}} .elementor-star-rating i:not(:last-of-type)' => 'margin-left: {{SIZE}}{{UNIT}}',
+					'{{WRAPPER}} .elementor-star-rating i:not(:last-of-type)' => 'margin-inline-end: {{SIZE}}{{UNIT}}',
 				],
 			]
 		);
@@ -535,6 +584,9 @@ class Reviews extends Base {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -615,6 +667,7 @@ class Reviews extends Base {
 						'stack-overflow',
 						'steam',
 						'telegram',
+						'threads',
 						'tripadvisor',
 						'tumblr',
 						'twitch',
@@ -625,6 +678,7 @@ class Reviews extends Base {
 						'weixin',
 						'whatsapp',
 						'wordpress',
+						'x-twitter',
 						'xing',
 						'yelp',
 						'youtube',
@@ -642,8 +696,6 @@ class Reviews extends Base {
 				'dynamic' => [
 					'active' => true,
 				],
-				'placeholder' => esc_html__( 'https://your-link.com', 'elementor-pro' ),
-
 			]
 		);
 
@@ -786,9 +838,8 @@ class Reviews extends Base {
 		}
 
 		$this->add_render_attribute( 'icon_wrapper_' . $element_key, 'class', 'elementor-testimonial__icon elementor-icon' );
-
-		$icon .= '<span class="elementor-screen-only">' . esc_html__( 'Read More', 'elementor-pro' ) . '</span>';
 		$this->add_render_attribute( 'icon_wrapper_' . $element_key, 'class', 'elementor-icon-' . $social );
+		$this->add_render_attribute( 'icon_wrapper_' . $element_key, 'aria-label', esc_attr__( 'Read More', 'elementor-pro' ) );
 
 		// Icon is escaped above, get_render_attribute_string() is safe
 		echo '<div ' . $this->get_render_attribute_string( 'icon_wrapper_' . $element_key ) . '>' . $icon . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

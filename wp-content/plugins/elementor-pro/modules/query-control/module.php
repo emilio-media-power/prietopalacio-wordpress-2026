@@ -4,10 +4,13 @@ namespace ElementorPro\Modules\QueryControl;
 use Elementor\Controls_Manager;
 use Elementor\Core\Common\Modules\Ajax\Module as Ajax;
 use Elementor\Core\Editor\Editor;
+use Elementor\Modules\System_Info\Reporters\WordPress;
 use Elementor\TemplateLibrary\Source_Local;
 use Elementor\Widget_Base;
 use ElementorPro\Base\Module_Base;
+use ElementorPro\Core\Security\Access_Control;
 use ElementorPro\Core\Utils;
+use ElementorPro\Modules\QueryControl\Controls\Group_Control_Taxonomy;
 use ElementorPro\Modules\QueryControl\Controls\Template_Query;
 use ElementorPro\Modules\QueryControl\Classes\Elementor_Post_Query;
 use ElementorPro\Modules\QueryControl\Classes\Elementor_Related_Query;
@@ -41,6 +44,8 @@ class Module extends Module_Base {
 
 	public static $displayed_ids = [];
 
+	private static bool $ignore_avoid_list = false;
+
 	private static $supported_objects_for_query = [
 		self::QUERY_OBJECT_POST,
 		self::QUERY_OBJECT_TAX,
@@ -57,15 +62,28 @@ class Module extends Module_Base {
 	}
 
 	public static function add_to_avoid_list( $ids ) {
-		self::$displayed_ids = array_unique( array_merge( self::$displayed_ids, $ids ) );
+		if ( ! self::$ignore_avoid_list ) {
+			self::$displayed_ids = array_unique( array_merge( self::$displayed_ids, $ids ) );
+		}
 	}
 
 	public static function get_avoid_list_ids() {
 		return self::$displayed_ids;
 	}
 
+	public function get_query_ignoring_avoid_list( $loop_widget, $query_name, $query_args ) {
+		$original_ignore = self::$ignore_avoid_list;
+		self::$ignore_avoid_list = true;
+
+		try {
+			return $this->get_query( $loop_widget, $query_name, $query_args );
+		} finally {
+			self::$ignore_avoid_list = $original_ignore;
+		}
+	}
+
 	/**
-	 * @deprecated use Group_Control_Query capabilities
+	 * @deprecated 2.5.0 Use `Group_Control_Query` class capabilities instead.
 	 *
 	 * @param Widget_Base $widget
 	 */
@@ -289,7 +307,7 @@ class Module extends Module_Base {
 				'user_nicename',
 			],
 		];
-		if ( 'detailed' === $data['autocomplete']['display'] ) {
+		if ( 'detailed' === $data['autocomplete']['display'] && Access_Control::user_can_access_private_posts() ) {
 			$query['fields'][] = 'user_email';
 		}
 		return $query;
@@ -383,7 +401,7 @@ class Module extends Module_Base {
 			],
 			'include' => (array) $data['id'],
 		];
-		if ( 'detailed' === $data['get_titles']['display'] ) {
+		if ( 'detailed' === $data['get_titles']['display'] && Access_Control::user_can_access_private_posts() ) {
 			$query['fields'][] = 'user_email';
 		}
 		return $query;
@@ -517,15 +535,24 @@ class Module extends Module_Base {
 	}
 
 	/**
+	 * @throws \Exception
+	 */
+	public static function verify_user_access_for_editing( array $data ): void {
+		Access_Control::verify_user_editing_capability();
+
+		if ( isset( $data['editor_post_id'] ) ) {
+			Access_Control::verify_post_edit_access( (int) $data['editor_post_id'] );
+		}
+	}
+
+	/**
 	 * @param array $data
 	 *
 	 * @return array
 	 * @throws \Exception
 	 */
 	public function ajax_posts_filter_autocomplete( array $data ) {
-		if ( ! current_user_can( Editor::EDITING_CAPABILITY ) ) {
-			throw new \Exception( 'Access denied.' );
-		}
+		$this->verify_user_access_for_editing( $data );
 
 		$query_data = $this->autocomplete_query_data( $data );
 		if ( is_wp_error( $query_data ) ) {
@@ -559,6 +586,10 @@ class Module extends Module_Base {
 				$query = new \WP_Query( $query_args );
 
 				foreach ( $query->posts as $post ) {
+					if ( ! Access_Control::user_can_edit( $post->ID ) ) {
+						continue;
+					}
+
 					if ( apply_filters( "elementor/query/get_autocomplete/custom/{$display}", true, $post, $data ) ) {
 						$text = $this->format_post_for_display( $post, $display, $data );
 						$results[] = [
@@ -572,6 +603,10 @@ class Module extends Module_Base {
 				$query = new \WP_Query( $query_args );
 
 				foreach ( $query->posts as $post ) {
+					if ( ! Access_Control::user_can_edit( $post->ID ) ) {
+						continue;
+					}
+
 					$document = Plugin::elementor()->documents->get( $post->ID );
 					if ( $document ) {
 						$text = esc_html( $post->post_title ) . ' (' . $document->get_post_type_title() . ')';
@@ -687,9 +722,7 @@ class Module extends Module_Base {
 	 * @throws \Exception
 	 */
 	public function ajax_posts_control_value_titles( $request ) {
-		if ( ! current_user_can( Editor::EDITING_CAPABILITY ) ) {
-			throw new \Exception( 'Access denied.' );
-		}
+		$this->verify_user_access_for_editing( $request );
 
 		$query_data = $this->get_titles_query_data( $request );
 		if ( is_wp_error( $query_data ) ) {
@@ -727,6 +760,10 @@ class Module extends Module_Base {
 				$query = new \WP_Query( $query_args );
 
 				foreach ( $query->posts as $post ) {
+					if ( ! Access_Control::user_can_edit( $post->ID ) ) {
+						continue;
+					}
+
 					if ( apply_filters( "elementor/query/get_value_titles/custom/{$display}", true, $post, $request ) ) {
 						$results[ $post->ID ] = $this->format_post_for_display( $post, $display, $request, 'get_value_titles' );
 					}
@@ -736,9 +773,13 @@ class Module extends Module_Base {
 				$query = new \WP_Query( $query_args );
 
 				foreach ( $query->posts as $post ) {
+					if ( ! Access_Control::user_can_edit( $post->ID ) ) {
+						continue;
+					}
+
 					$document = Plugin::elementor()->documents->get( $post->ID );
 					if ( $document ) {
-						$results[ $post->ID ] = esc_html( $post->post_title ) . ' (' . $document->get_post_type_title() . ')';
+						$results[ $post->ID ] = htmlentities( esc_html( $post->post_title ) ) . ' (' . $document->get_post_type_title() . ')';
 					}
 				}
 				break;
@@ -815,7 +856,11 @@ class Module extends Module_Base {
 				$text = $user->display_name;
 				break;
 			case 'detailed':
-				$text = sprintf( '%s (%s)', $user->display_name, $user->user_email );
+				if ( Access_Control::user_can_access_private_posts() ) {
+					$text = sprintf( '%s (%s)', $user->display_name, $user->user_email );
+				} else {
+					$text = $user->display_name;
+				}
 				break;
 			default:
 				$text = apply_filters( "elementor/query/{$filter_name}/display/{$display}", $user, $data );
@@ -847,6 +892,8 @@ class Module extends Module_Base {
 		$controls_manager->add_group_control( Group_Control_Query::get_type(), new Group_Control_Query() );
 
 		$controls_manager->add_group_control( Group_Control_Related::get_type(), new Group_Control_Related() );
+
+		$controls_manager->add_group_control( Group_Control_Taxonomy::get_type(), new Group_Control_Taxonomy() );
 
 		$controls_manager->register( new Query() );
 
@@ -922,7 +969,7 @@ class Module extends Module_Base {
 	}
 
 	/**
-	 * @deprecated use Elementor_Post_Query capabilities
+	 * @deprecated 2.5.0 Use `Elementor_Post_Query` class capabilities instead.
 	 *
 	 * @param string $control_id
 	 * @param array $settings
@@ -941,7 +988,7 @@ class Module extends Module_Base {
 	}
 
 	/**
-	 * @param \ElementorPro\Base\Base_Widget $widget
+	 * @param \Elementor\Widget_Base $widget
 	 * @param string $name
 	 * @param array $query_args
 	 * @param array $fallback_args
@@ -970,15 +1017,6 @@ class Module extends Module_Base {
 		 */
 		$ajax_manager->register_ajax_action( 'query_control_value_titles_deprecated', [ $this, 'ajax_posts_control_value_titles_deprecated' ] );
 		$ajax_manager->register_ajax_action( 'pro_panel_posts_control_filter_autocomplete_deprecated', [ $this, 'ajax_posts_filter_autocomplete_deprecated' ] );
-	}
-
-	/**
-	 * @deprecated 3.1.0
-	 */
-	public function localize_settings() {
-		Plugin::elementor()->modules_manager->get_modules( 'dev-tools' )->deprecation->deprecated_function( __METHOD__, '3.1.0' );
-
-		return [];
 	}
 
 	protected function add_actions() {

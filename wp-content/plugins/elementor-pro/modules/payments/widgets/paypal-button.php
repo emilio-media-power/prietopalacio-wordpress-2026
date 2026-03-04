@@ -6,6 +6,7 @@ use Elementor\Controls_Manager;
 use Elementor\Plugin;
 use Elementor\Utils;
 use ElementorPro\Modules\Payments\Classes\Payment_Button;
+use ElementorPro\Plugin as ProPlugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -45,6 +46,10 @@ class Paypal_Button extends Payment_Button {
 
 	public function get_keywords() {
 		return [ 'paypal', 'payment', 'sell', 'donate' ];
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! ProPlugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
 	}
 
 	protected function get_merchant_name() {
@@ -217,7 +222,7 @@ class Paypal_Button extends Payment_Button {
 	}
 
 	// Render the payment button.
-	protected function render_button( Widget_Base $instance = null, $tag = 'a' ) {
+	protected function render_button( ?Widget_Base $instance = null, $tag = 'a' ) {
 		switch ( $this->get_api_method() ) {
 			case 'legacy':
 				$this->render_legacy_form();
@@ -256,6 +261,9 @@ class Paypal_Button extends Payment_Button {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 				'description' => esc_html__( 'Transactions made through your PayPal button will be registered under this account.', 'elementor-pro' ),
 				'label_block' => true,
 				'condition' => [
@@ -272,6 +280,9 @@ class Paypal_Button extends Payment_Button {
 				'type' => Controls_Manager::TEXT,
 				'dynamic' => [
 					'active' => true,
+				],
+				'ai' => [
+					'active' => false,
 				],
 				'label_block' => true,
 				'condition' => [
@@ -325,6 +336,9 @@ class Paypal_Button extends Payment_Button {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 				'description' => esc_html__( 'This is the address given to you by PayPal when you set up a sandbox with your developer account. You can use the sandbox to test your purchase flow.', 'elementor-pro' ),
 				'label_block' => true,
 				'condition' => [
@@ -332,28 +346,5 @@ class Paypal_Button extends Payment_Button {
 				],
 			]
 		);
-	}
-
-	// This widget extends the button core widget and therefore needs to overwrite the widget-base core CSS config.
-	public function get_css_config() {
-		$widget_name = 'payments';
-
-		$direction = is_rtl() ? '-rtl' : '';
-
-		$css_file_path = 'css/widget-' . $widget_name . $direction . '.min.css';
-
-		/*
-		 * Currently this widget does not support custom-breakpoints in its CSS file.
-		 * In order to support it, this widget needs to get the CSS config from the base-widget-trait.php.
-		 * But to make sure that it implements the Pro assets-path due to the fact that it extends a Core widget.
-		*/
-		return [
-			'key' => $widget_name,
-			'version' => ELEMENTOR_PRO_VERSION,
-			'file_path' => ELEMENTOR_PRO_ASSETS_PATH . $css_file_path,
-			'data' => [
-				'file_url' => ELEMENTOR_PRO_ASSETS_URL . $css_file_path,
-			],
-		];
 	}
 }

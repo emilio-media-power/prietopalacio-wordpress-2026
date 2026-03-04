@@ -32,11 +32,22 @@ class Search_Form extends Base {
 		return [ 'search', 'form' ];
 	}
 
-	public function get_style_depends() {
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	public function show_in_panel(): bool {
+		return false;
+	}
+
+	public function get_style_depends(): array {
+		$style_depends = [ 'widget-search-form' ];
+
 		if ( Icons_Manager::is_migration_allowed() ) {
-			return [ 'elementor-icons-fa-solid' ];
+			$style_depends[] = 'elementor-icons-fa-solid';
 		}
-		return [];
+
+		return $style_depends;
 	}
 
 	protected function register_controls() {
@@ -45,6 +56,12 @@ class Search_Form extends Base {
 			[
 				'label' => esc_html__( 'Search Form', 'elementor-pro' ),
 			]
+		);
+
+		$this->add_deprecation_message(
+			'3.24.0',
+			esc_html__( 'You are currently editing a Search Form Widget in its old version. Any new Search widget dragged into the canvas will be the new Search widget, with the improved search capabilities.', 'elementor-pro' ),
+			'search'
 		);
 
 		$this->add_control(
@@ -187,18 +204,23 @@ class Search_Form extends Base {
 				'type' => Controls_Manager::CHOOSE,
 				'default' => 'center',
 				'options' => [
-					'left' => [
-						'title' => esc_html__( 'Left', 'elementor-pro' ),
+					'start' => [
+						'title' => esc_html__( 'Start', 'elementor-pro' ),
 						'icon' => 'eicon-h-align-left',
 					],
 					'center' => [
 						'title' => esc_html__( 'Center', 'elementor-pro' ),
 						'icon' => 'eicon-h-align-center',
 					],
-					'right' => [
-						'title' => esc_html__( 'Right', 'elementor-pro' ),
+					'end' => [
+						'title' => esc_html__( 'End', 'elementor-pro' ),
 						'icon' => 'eicon-h-align-right',
 					],
+				],
+				'classes' => 'elementor-control-start-end',
+				'selectors_dictionary' => [
+					'left' => is_rtl() ? 'end' : 'start',
+					'right' => is_rtl() ? 'start' : 'end',
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-search-form' => 'text-align: {{VALUE}}',
@@ -243,7 +265,6 @@ class Search_Form extends Base {
 				'type' => Controls_Manager::SLIDER,
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
 					],
 				],
@@ -444,8 +465,13 @@ class Search_Form extends Base {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 200,
+					],
+					'em' => [
+						'max' => 20,
+					],
+					'rem' => [
+						'max' => 20,
 					],
 				],
 				'default' => [
@@ -563,7 +589,6 @@ class Search_Form extends Base {
 				'type' => Controls_Manager::SLIDER,
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
 					],
 				],
@@ -701,6 +726,9 @@ class Search_Form extends Base {
 					'em' => [
 						'max' => 2,
 					],
+					'rem' => [
+						'max' => 2,
+					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-search-form__toggle' => '--e-search-form-toggle-border-width: {{SIZE}}{{UNIT}}',
@@ -731,9 +759,8 @@ class Search_Form extends Base {
 			'form',
 			[
 				'class' => 'elementor-search-form',
-				'action' => home_url(),
+				'action' => esc_url( home_url() ),
 				'method' => 'get',
-				'role' => 'search',
 			]
 		);
 
@@ -778,70 +805,69 @@ class Search_Form extends Base {
 			'library' => 'fa-solid',
 		];
 		?>
-		<form <?php $this->print_render_attribute_string( 'form' ); ?>>
-			<?php
-			/**
-			 * Before Elementor search form inputs.
-			 *
-			 * Fires before Elementor search form input fields.
-			 *
-			 * @param Search_Form $this An instance of Elementor search form.
-			 */
-			do_action( 'elementor_pro/search_form/before_input', $this );
-			?>
-			<?php if ( 'full_screen' === $settings['skin'] ) : ?>
-			<div class="elementor-search-form__toggle" tabindex="0" role="button">
-				<?php $this->render_search_icon( $icon, [ 'aria-hidden' => 'true' ] ); ?>
-				<span class="elementor-screen-only"><?php esc_html_e( 'Search', 'elementor-pro' ); ?></span>
-			</div>
-			<?php endif; ?>
-			<div <?php $this->print_render_attribute_string( 'container' ); ?>>
-				<label <?php $this->print_render_attribute_string( 'label' ); ?>><?php esc_html_e( 'Search', 'elementor-pro' ); ?></label>
-
-				<?php if ( 'minimal' === $settings['skin'] ) : ?>
-					<div class="elementor-search-form__icon">
-						<?php $this->render_search_icon( $icon, [ 'aria-hidden' => 'true' ] ); ?>
-						<span class="elementor-screen-only"><?php esc_html_e( 'Search', 'elementor-pro' ); ?></span>
-					</div>
-				<?php endif; ?>
-
-				<input <?php $this->print_render_attribute_string( 'input' ); ?>>
+		<search role="search">
+			<form <?php $this->print_render_attribute_string( 'form' ); ?>>
 				<?php
 				/**
-				 * After Elementor search form inputs.
+				 * Before Elementor search form inputs.
 				 *
-				 * Fires after Elementor search form input fields, before the search
-				 * button.
+				 * Fires before Elementor search form input fields.
 				 *
 				 * @param Search_Form $this An instance of Elementor search form.
 				 */
-				do_action( 'elementor_pro/search_form/after_input', $this );
+				do_action( 'elementor_pro/search_form/before_input', $this );
 				?>
-
-				<?php if ( 'classic' === $settings['skin'] ) : ?>
-					<button class="elementor-search-form__submit" type="submit" aria-label="<?php esc_attr_e( 'Search', 'elementor-pro' ); ?>">
-						<?php if ( 'icon' === $settings['button_type'] ) : ?>
-							<?php $this->render_search_icon( $icon, $this->get_render_attributes( 'icon' ) ); ?>
-							<span class="elementor-screen-only"><?php esc_html_e( 'Search', 'elementor-pro' ); ?></span>
-						<?php elseif ( ! empty( $settings['button_text'] ) ) : ?>
-							<?php $this->print_unescaped_setting( 'button_text' ); ?>
-						<?php endif; ?>
-					</button>
-				<?php endif; ?>
-
 				<?php if ( 'full_screen' === $settings['skin'] ) : ?>
-				<div class="dialog-lightbox-close-button dialog-close-button" role="button" tabindex="0">
-					<?php
-						Icons_Manager::render_icon( [
-							'library' => 'eicons',
-							'value' => 'eicon-close',
-						], [ 'aria-hidden' => 'true' ] );
-					?>
-					<span class="elementor-screen-only"><?php esc_html_e( 'Close this search box.', 'elementor-pro' ); ?></span>
+				<div class="elementor-search-form__toggle" role="button" tabindex="0" aria-label="<?php echo esc_attr__( 'Search', 'elementor-pro' ); ?>">
+					<?php $this->render_search_icon( $icon, [ 'aria-hidden' => 'true' ] ); ?>
 				</div>
-				<?php endif ?>
-			</div>
-		</form>
+				<?php endif; ?>
+				<div <?php $this->print_render_attribute_string( 'container' ); ?>>
+					<label <?php $this->print_render_attribute_string( 'label' ); ?>><?php echo esc_html__( 'Search', 'elementor-pro' ); ?></label>
+
+					<?php if ( 'minimal' === $settings['skin'] ) : ?>
+						<div class="elementor-search-form__icon">
+							<?php $this->render_search_icon( $icon, [ 'aria-hidden' => 'true' ] ); ?>
+							<span class="elementor-screen-only"><?php echo esc_html__( 'Search', 'elementor-pro' ); ?></span>
+						</div>
+					<?php endif; ?>
+
+					<input <?php $this->print_render_attribute_string( 'input' ); ?>>
+					<?php
+					/**
+					 * After Elementor search form inputs.
+					 *
+					 * Fires after Elementor search form input fields, before the search
+					 * button.
+					 *
+					 * @param Search_Form $this An instance of Elementor search form.
+					 */
+					do_action( 'elementor_pro/search_form/after_input', $this );
+					?>
+
+					<?php if ( 'classic' === $settings['skin'] ) : ?>
+						<button class="elementor-search-form__submit" type="submit" aria-label="<?php echo esc_attr__( 'Search', 'elementor-pro' ); ?>">
+							<?php if ( 'icon' === $settings['button_type'] ) : ?>
+								<?php $this->render_search_icon( $icon, $this->get_render_attributes( 'icon' ) ); ?>
+							<?php elseif ( ! empty( $settings['button_text'] ) ) : ?>
+								<?php echo wp_kses_post( $settings['button_text'] ); ?>
+							<?php endif; ?>
+						</button>
+					<?php endif; ?>
+
+					<?php if ( 'full_screen' === $settings['skin'] ) : ?>
+					<div class="dialog-lightbox-close-button dialog-close-button" role="button" tabindex="0" aria-label="<?php echo esc_attr__( 'Close this search box.', 'elementor-pro' ); ?>">
+						<?php
+							Icons_Manager::render_icon( [
+								'library' => 'eicons',
+								'value' => 'eicon-close',
+							], [ 'aria-hidden' => 'true' ] );
+						?>
+					</div>
+					<?php endif ?>
+				</div>
+			</form>
+		</search>
 		<?php
 	}
 
@@ -860,10 +886,8 @@ class Search_Form extends Base {
 			'form',
 			{
 				'class': 'elementor-search-form',
-				'action': '<?php // PHPCS - the method home_url is safe.
-					echo home_url(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>',
+				'action': '<?php echo esc_url( home_url() ); ?>',
 				'method': 'get',
-				'role': 'search',
 			}
 		);
 
@@ -903,37 +927,38 @@ class Search_Form extends Base {
 				}
 			}
 		#>
-		<form {{{ view.getRenderAttributeString( 'form' ) }}}>
-			<# if ( 'full_screen' === settings.skin ) { #>
-				<div class="elementor-search-form__toggle" tabindex="0" role="button">
-					<i class="fa fas fa-search" aria-hidden="true"></i>
-					<span class="elementor-screen-only"><?php esc_html_e( 'Search', 'elementor-pro' ); ?></span>
-				</div>
-			<# } #>
-			<div {{{ view.getRenderAttributeString( 'container' ) }}}>
-				<label {{{ view.getRenderAttributeString( 'label' ) }}}><?php esc_html_e( 'Search', 'elementor-pro' ); ?></label>
-
-				<# if ( 'minimal' === settings.skin ) { #>
-					<div class="elementor-search-form__icon">
+		<search role="search">
+			<form {{{ view.getRenderAttributeString( 'form' ) }}}>
+				<# if ( 'full_screen' === settings.skin ) { #>
+					<div class="elementor-search-form__toggle" role="button" tabindex="0" aria-label="<?php echo esc_attr__( 'Search', 'elementor-pro' ); ?>">
 						<i class="fa fas fa-search" aria-hidden="true"></i>
-						<span class="elementor-screen-only"><?php esc_html_e( 'Search', 'elementor-pro' ); ?></span>
 					</div>
 				<# } #>
+				<div {{{ view.getRenderAttributeString( 'container' ) }}}>
+					<label {{{ view.getRenderAttributeString( 'label' ) }}}><?php echo esc_html__( 'Search', 'elementor-pro' ); ?></label>
 
-				<input {{{ view.getRenderAttributeString( 'input' ) }}}>
+					<# if ( 'minimal' === settings.skin ) { #>
+						<div class="elementor-search-form__icon">
+							<i class="fa fas fa-search" aria-hidden="true"></i>
+							<span class="elementor-screen-only"><?php echo esc_html__( 'Search', 'elementor-pro' ); ?></span>
+						</div>
+					<# } #>
 
-				<# if ( 'classic' === settings.skin ) { #>
-					<button class="elementor-search-form__submit" type="submit">
-						<# if ( 'icon' === settings.button_type ) { #>
-							<i class="{{ iconClass }}" aria-hidden="true"></i>
-							<span class="elementor-screen-only"><?php esc_html_e( 'Submit', 'elementor-pro' ); ?></span>
-						<# } else if ( settings.button_text ) { #>
-							{{{ settings.button_text }}}
-						<# } #>
-					</button>
-				<# } #>
-			</div>
-		</form>
+					<input {{{ view.getRenderAttributeString( 'input' ) }}}>
+
+					<# if ( 'classic' === settings.skin ) { #>
+						<button class="elementor-search-form__submit" type="submit">
+							<# if ( 'icon' === settings.button_type ) { #>
+								<i class="{{ iconClass }}" aria-hidden="true"></i>
+								<span class="elementor-screen-only"><?php echo esc_html__( 'Submit', 'elementor-pro' ); ?></span>
+							<# } else if ( settings.button_text ) { #>
+								{{ settings.button_text }}
+							<# } #>
+						</button>
+					<# } #>
+				</div>
+			</form>
+		</search>
 		<?php
 	}
 

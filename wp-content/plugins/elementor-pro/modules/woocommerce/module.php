@@ -3,6 +3,7 @@ namespace ElementorPro\Modules\Woocommerce;
 
 use Elementor\Widget_Base;
 use ElementorPro\Modules\Woocommerce\Skins\Skin_Loop_Product;
+use ElementorPro\Modules\Woocommerce\Skins\Skin_Loop_Product_Taxonomy;
 use ElementorPro\Core\Utils as ProUtils;
 use ElementorPro\Plugin;
 use ElementorPro\Base\Module_Base;
@@ -19,6 +20,11 @@ use ElementorPro\Modules\Woocommerce\Classes\Products_Renderer;
 use ElementorPro\Modules\Woocommerce\Widgets\Products as Products_Widget;
 use Elementor\Icons_Manager;
 use ElementorPro\Modules\LoopBuilder\Module as LoopBuilderModule;
+use ElementorPro\License\API;
+use Elementor\App\Modules\ImportExportCustomization\Processes\Import;
+use Elementor\App\Modules\ImportExportCustomization\Processes\Revert;
+use ElementorPro\Modules\Woocommerce\ImportExportCustomization\Woocommerce_Settings;
+use ElementorPro\Modules\Woocommerce\ImportExportCustomization\Woocommerce_Settings_Revert;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -30,7 +36,54 @@ class Module extends Module_Base {
 	const TEMPLATE_MINI_CART = 'cart/mini-cart.php';
 	const OPTION_NAME_USE_MINI_CART = 'use_mini_cart_template';
 	const MENU_CART_FRAGMENTS_ACTION = 'elementor-menu-cart-fragments';
+	const MENU_CART_LICENSE_FEATURE_NAME = 'woocommerce-menu-cart';
+	const SINGLE_PRODUCT_TEMPLATE_LICENSE_FEATURE_NAME = 'product-single';
+	const ARCHIVE_PRODUCT_TEMPLATE_LICENSE_FEATURE_NAME = 'product-archive';
+	const SITE_SETTINGS_PAGES_LICENSE_FEATURE_NAME = 'settings-woocommerce-pages';
+	const SITE_SETTINGS_NOTICES_LICENSE_FEATURE_NAME = 'settings-woocommerce-notices';
+	const DYNAMIC_TAGS_LICENSE_FEATURE_NAME = 'dynamic-tags-wc';
 	const LOOP_PRODUCT_SKIN_ID = 'product';
+	const LOOP_PRODUCT_TAXONOMY_SKIN_ID = 'product_taxonomy';
+	const WC_PERSISTENT_SITE_SETTINGS = [
+		'woocommerce_cart_page_id',
+		'woocommerce_checkout_page_id',
+		'woocommerce_myaccount_page_id',
+		'woocommerce_terms_page_id',
+		'woocommerce_purchase_summary_page_id',
+		'woocommerce_shop_page_id',
+	];
+	const WIDGET_NAME_CLASS_NAME_MAP = [
+		'woocommerce-products' => 'Products',
+		'wc-products' => 'Products_Deprecated',
+		'woocommerce-product-add-to-cart' => 'Product_Add_To_Cart',
+		'wc-elements' => 'Elements',
+		'wc-categories' => 'Categories',
+		'woocommerce-product-price' => 'Product_Price',
+		'woocommerce-product-title' => 'Product_Title',
+		'woocommerce-product-images' => 'Product_Images',
+		'woocommerce-product-upsell' => 'Product_Upsell',
+		'woocommerce-product-short-description' => 'Product_Short_Description',
+		'woocommerce-product-meta' => 'Product_Meta',
+		'woocommerce-product-stock' => 'Product_Stock',
+		'woocommerce-product-rating' => 'Product_Rating',
+		'woocommerce-product-data-tabs' => 'Product_Data_Tabs',
+		'woocommerce-product-related' => 'Product_Related',
+		'woocommerce-breadcrumb' => 'Breadcrumb',
+		'wc-add-to-cart' => 'Add_To_Cart',
+		'wc-archive-products' => 'Archive_Products',
+		'woocommerce-archive-products' => 'Archive_Products_Deprecated',
+		'woocommerce-product-additional-information' => 'Product_Additional_Information',
+		'woocommerce-menu-cart' => 'Menu_Cart',
+		'woocommerce-product-content' => 'Product_Content',
+		'woocommerce-archive-description' => 'Archive_Description',
+		'woocommerce-checkout-page' => 'Checkout',
+		'woocommerce-cart' => 'Cart',
+		'woocommerce-my-account' => 'My_Account',
+		'woocommerce-purchase-summary' => 'Purchase_Summary',
+		'woocommerce-notices' => 'Notices',
+		'wc-single-elements' => 'Single_Elements',
+	];
+	const WIDGET_HAS_CUSTOM_BREAKPOINTS = true;
 
 	protected $docs_types = [];
 	protected $use_mini_cart_template;
@@ -80,40 +133,7 @@ class Module extends Module_Base {
 	}
 
 	public function get_widgets() {
-		return [
-			'Archive_Products',
-			'Archive_Products_Deprecated',
-			'Archive_Description',
-			'Products',
-			'Products_Deprecated',
-
-			'Breadcrumb',
-			'Add_To_Cart',
-			'Elements',
-			'Single_Elements',
-			'Categories',
-			'Menu_Cart',
-
-			'Product_Title',
-			'Product_Images',
-			'Product_Price',
-			'Product_Add_To_Cart',
-			'Product_Rating',
-			'Product_Stock',
-			'Product_Meta',
-			'Product_Short_Description',
-			'Product_Content',
-			'Product_Data_Tabs',
-			'Product_Additional_Information',
-			'Product_Related',
-			'Product_Upsell',
-
-			'Purchase_Summary',
-			'Checkout',
-			'Cart',
-			'My_Account',
-			'Notices',
-		];
+		return API::filter_active_features( static::WIDGET_NAME_CLASS_NAME_MAP );
 	}
 
 	const RECOMMENDED_POSTS_WIDGET_NAMES = [
@@ -128,6 +148,13 @@ class Module extends Module_Base {
 		'woocommerce-product-content',
 		'woocommerce-product-data-tabs',
 		'woocommerce-product-additional-information',
+	];
+
+	// 'WC page name' => 'Elementor widget name'
+	const WC_STATUS_PAGES_MAPPED_TO_WIDGETS = [
+		'Cart' => 'woocommerce-cart',
+		'Checkout' => 'woocommerce-checkout-page',
+		'My account' => 'woocommerce-my-account',
 	];
 
 	public function add_product_post_class( $classes ) {
@@ -145,6 +172,10 @@ class Module extends Module_Base {
 	}
 
 	public function register_tags() {
+		if ( ! API::is_licence_has_feature( static::DYNAMIC_TAGS_LICENSE_FEATURE_NAME, API::BC_VALIDATION_CALLBACK ) ) {
+			return;
+		}
+
 		$tags = [
 			'Product_Gallery',
 			'Product_Image',
@@ -158,6 +189,7 @@ class Module extends Module_Base {
 			'Product_Terms',
 			'Product_Title',
 			'Category_Image',
+			'Woocommerce_Add_To_Cart',
 		];
 
 		/** @var \Elementor\Core\DynamicTags\Manager $module */
@@ -191,11 +223,17 @@ class Module extends Module_Base {
 	 * @param Documents_Manager $documents_manager
 	 */
 	public function register_documents( $documents_manager ) {
-		$this->docs_types = [
-			'product-post' => Product_Post::get_class_full_name(),
-			'product' => Product::get_class_full_name(),
-			'product-archive' => Product_Archive::get_class_full_name(),
-		];
+		if ( API::is_licence_has_feature( static::SINGLE_PRODUCT_TEMPLATE_LICENSE_FEATURE_NAME, API::BC_VALIDATION_CALLBACK ) ) {
+			$this->docs_types = [
+				'product-post' => Product_Post::get_class_full_name(),
+			];
+
+			$this->docs_types['product'] = Product::get_class_full_name();
+		}
+
+		if ( API::is_licence_has_feature( static::ARCHIVE_PRODUCT_TEMPLATE_LICENSE_FEATURE_NAME, API::BC_VALIDATION_CALLBACK ) ) {
+			$this->docs_types['product-archive'] = Product_Archive::get_class_full_name();
+		}
 
 		foreach ( $this->docs_types as $type => $class_name ) {
 			$documents_manager->register_document_type( $type, $class_name );
@@ -215,10 +253,8 @@ class Module extends Module_Base {
 				<span class="elementor-button-text"><?php echo $sub_total; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 				<span class="elementor-button-icon">
 					<span class="elementor-button-icon-qty" data-counter="<?php echo esc_attr( $product_count ); ?>"><?php echo $product_count; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-					<?php
-					self::render_menu_icon( $settings, $icon );
-					?>
-					<span class="elementor-screen-only"><?php esc_html_e( 'Cart', 'elementor-pro' ); ?></span>
+					<?php self::render_menu_icon( $settings, $icon ); ?>
+					<span class="elementor-screen-only"><?php echo esc_html__( 'Cart', 'elementor-pro' ); ?></span>
 				</span>
 			</a>
 		</div>
@@ -375,7 +411,7 @@ class Module extends Module_Base {
 			}
 
 			$fragment_data = $this->get_fragment_data( $element );
-			$total_fragments = count( $fragment_data );
+			$total_fragments = count( $fragment_data ) / 2;
 
 			for ( $i = 0; $i < $total_fragments; $i++ ) {
 				$fragments[ $fragment_data['selector'][ $i ] ] = $fragment_data['html'][ $i ];
@@ -513,6 +549,10 @@ class Module extends Module_Base {
 	}
 
 	public function register_admin_fields( Settings $settings ) {
+		if ( ! API::is_licence_has_feature( static::MENU_CART_LICENSE_FEATURE_NAME, API::BC_VALIDATION_CALLBACK ) ) {
+			return;
+		}
+
 		$settings->add_section( Settings::TAB_INTEGRATIONS, 'woocommerce', [
 			'callback' => function() {
 				echo '<hr><h2>' . esc_html__( 'WooCommerce', 'elementor-pro' ) . '</h2>';
@@ -588,14 +628,16 @@ class Module extends Module_Base {
 				$wp_http_referer = wp_unslash( $post_data['_wp_http_referer'] );
 
 				$wp_http_referer_query_string = wp_parse_url( $wp_http_referer, PHP_URL_QUERY );
-				parse_str( $wp_http_referer_query_string, $wp_http_referer_query_string );
+				if ( ! empty( $wp_http_referer_query_string ) ) {
+					parse_str( $wp_http_referer_query_string, $wp_http_referer_query_string );
 
-				if ( isset( $wp_http_referer_query_string['elementorPageId'] ) ) {
-					$page_id = $wp_http_referer_query_string['elementorPageId'];
-				}
+					if ( isset( $wp_http_referer_query_string['elementorPageId'] ) ) {
+						$page_id = $wp_http_referer_query_string['elementorPageId'];
+					}
 
-				if ( isset( $wp_http_referer_query_string['elementorWidgetId'] ) ) {
-					$widget_id = $wp_http_referer_query_string['elementorWidgetId'];
+					if ( isset( $wp_http_referer_query_string['elementorWidgetId'] ) ) {
+						$widget_id = $wp_http_referer_query_string['elementorWidgetId'];
+					}
 				}
 			}
 		}
@@ -802,6 +844,14 @@ class Module extends Module_Base {
 		$this->add_products_to_options( $form, 'source' );
 	}
 
+	public function add_products_taxonomy_type_to_template_popup( $form ) {
+		$this->add_taxonomies_to_options( $form, '_elementor_source' );
+	}
+
+	public function add_products_taxonomy_type_to_loop_settings_query( $form ) {
+		$this->add_taxonomies_to_options( $form, 'source' );
+	}
+
 	public function e_cart_count_fragments( $fragments ) {
 		$product_count = WC()->cart->get_cart_contents_count();
 
@@ -828,6 +878,21 @@ class Module extends Module_Base {
 
 		$options = $controls['options'];
 		$options[ self::LOOP_PRODUCT_SKIN_ID ] = esc_html__( 'Products', 'elementor-pro' );
+
+		$form->update_control( $control_name, [
+			'options' => $options,
+		] );
+	}
+
+	protected function add_taxonomies_to_options( $form, $control_name ) {
+		$controls = $form->get_controls( $control_name );
+
+		if ( ! $controls || ! isset( $controls['options'] ) ) {
+			return;
+		}
+
+		$options = $controls['options'];
+		$options[ self::LOOP_PRODUCT_TAXONOMY_SKIN_ID ] = esc_html__( 'Product Taxonomy', 'elementor-pro' );
 
 		$form->update_control($control_name, [
 			'options' => $options,
@@ -914,7 +979,7 @@ class Module extends Module_Base {
 
 	public function e_notices_body_classes( $classes ) {
 		if ( $this->should_load_wc_notices_styles() ) {
-			foreach ( $this->woocommerce_notices_elements as $notice_element ) {
+			foreach ( $this->get_styled_notice_elements() as $notice_element ) {
 				$classes[] = 'e-' . str_replace( '_', '-', $notice_element ) . '-notice';
 			}
 		}
@@ -922,15 +987,26 @@ class Module extends Module_Base {
 		return $classes;
 	}
 
-	public function e_notices_css( $classes ) {
-		if ( $this->should_load_wc_notices_styles() ) {
-			wp_enqueue_style(
-				'e-woocommerce-notices',
-				ELEMENTOR_PRO_URL . 'assets/css/woocommerce-notices.min.css',
-				[],
-				ELEMENTOR_PRO_VERSION
-			);
+	public function get_styled_notice_elements() {
+		if ( empty( $this->woocommerce_notices_elements ) ) {
+			$kit = Plugin::elementor()->kits_manager->get_active_kit_for_frontend();
+			$this->woocommerce_notices_elements = $kit->get_settings_for_display( 'woocommerce_notices_elements' );
 		}
+
+		return ! empty( $this->woocommerce_notices_elements ) ? $this->woocommerce_notices_elements : [];
+	}
+
+	public function e_notices_css() {
+		if ( ! $this->should_load_wc_notices_styles() ) {
+			return false;
+		}
+
+		wp_enqueue_style(
+			'e-woocommerce-notices',
+			ELEMENTOR_PRO_URL . 'assets/css/woocommerce-notices.min.css',
+			[],
+			ELEMENTOR_PRO_VERSION
+		);
 	}
 
 	public function get_order_received_endpoint_url( $url, $endpoint, $value ) {
@@ -1132,6 +1208,10 @@ class Module extends Module_Base {
 	 * @return boolean
 	 */
 	private function should_load_wc_notices_styles() {
+		if ( ! API::is_licence_has_feature( static::SITE_SETTINGS_NOTICES_LICENSE_FEATURE_NAME, API::BC_VALIDATION_CALLBACK ) ) {
+			return false;
+		}
+
 		$woocommerce_active = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
 		$is_editor = ProUtils::_unstable_get_super_global_value( $_GET, 'elementor-preview' );
 
@@ -1140,12 +1220,9 @@ class Module extends Module_Base {
 			return true;
 		}
 
-		$kit = Plugin::elementor()->kits_manager->get_active_kit_for_frontend();
-		$this->woocommerce_notices_elements = is_array( $kit->get_settings_for_display( 'woocommerce_notices_elements' ) ) ? $kit->get_settings_for_display( 'woocommerce_notices_elements' ) : [];
-
 		// Front end checks.
 		if (
-			0 < count( $this->woocommerce_notices_elements ) // At least one notice has been activated.
+			0 < count( $this->get_styled_notice_elements() ) // At least one notice has been activated.
 			&& $woocommerce_active // WooCommerce is active.
 			&& ( ! is_admin() || $is_editor ) // We are not in WP Admin.
 		) {
@@ -1202,7 +1279,7 @@ class Module extends Module_Base {
 
 		$products_html = ob_get_clean();
 
-		remove_filter( $title_hook, function(){}, 10 );
+		remove_filter( $title_hook, function() {}, 10 );
 
 		if ( $products_html ) {
 			$products_html = str_replace( '<ul class="products', '<ul class="products elementor-grid', $products_html );
@@ -1287,14 +1364,28 @@ class Module extends Module_Base {
 		return Plugin::elementor()->preview->is_preview_mode() || is_preview();
 	}
 
+	public function register_import_runner( Import $import ) {
+		$import->register( new Woocommerce_Settings() );
+	}
+
+	public function register_revert_runner( Revert $revert ) {
+		$revert->register( new Woocommerce_Settings_Revert() );
+	}
+
 	public function __construct() {
 		parent::__construct();
+
+		add_action( 'elementor/import-export-customization/import-kit', [ $this, 'register_import_runner' ] );
+		add_action( 'elementor/import-export-customization/revert-kit', [ $this, 'register_revert_runner' ] );
 
 		add_action( 'elementor/kit/register_tabs', [ $this, 'init_site_settings' ], 1, 40 );
 		$this->add_update_kit_settings_hooks();
 
 		add_action( 'elementor/template-library/create_new_dialog_fields', [ $this, 'add_products_type_to_template_popup' ], 11 );
 		add_action( 'elementor-pro/modules/loop-builder/documents/loop/query_settings', [ $this, 'add_products_type_to_loop_settings_query' ], 11 );
+
+		add_action( 'elementor/template-library/create_new_dialog_fields', [ $this, 'add_products_taxonomy_type_to_template_popup' ], 13 );
+		add_action( 'elementor-pro/modules/loop-builder/documents/loop/query_settings', [ $this, 'add_products_taxonomy_type_to_loop_settings_query' ], 13 );
 
 		$this->use_mini_cart_template = 'yes' === get_option( 'elementor_' . self::OPTION_NAME_USE_MINI_CART, 'no' );
 
@@ -1396,6 +1487,9 @@ class Module extends Module_Base {
 			add_action( 'elementor/widget/' . $widget_type . '/skins_init', function( Widget_Base $widget ) {
 				$widget->add_skin( new Skin_Loop_Product( $widget ) );
 			} );
+			add_action( 'elementor/widget/' . $widget_type . '/skins_init', function ( Widget_Base $widget ) {
+				$widget->add_skin( new Skin_Loop_Product_Taxonomy( $widget ) );
+			}, 13 );
 		}
 
 		// WooCommerce Notice Site Settings
@@ -1405,6 +1499,48 @@ class Module extends Module_Base {
 		add_filter( 'elementor/query/query_args', function( $query_args, $widget ) {
 			return $this->loop_query( $query_args, $widget );
 		}, 10, 2 );
+
+		add_filter( 'woocommerce_rest_prepare_system_status', function( $response, $system_status, $request ) {
+			return $this->add_system_status_data( $response, $system_status, $request );
+		}, 10, 3 );
+
+		add_filter( 'elementor/editor/localize_settings', function ( $config ) {
+			return $this->populate_persistent_settings( $config );
+		});
+
+		add_action( 'elementor/frontend/after_register_styles', [ $this, 'register_styles' ] );
+	}
+
+	public function add_system_status_data( $response, $system_status, $request ) {
+		foreach ( $response->data['pages'] as $index => $wc_page ) {
+			$this->modify_response_if_widget_exists_in_page( $wc_page, $response, $index );
+		}
+
+		return $response;
+	}
+
+	private function modify_response_if_widget_exists_in_page( $wc_page, &$response, $index ) {
+		if ( empty( $wc_page['page_name'] ) || empty( $wc_page['page_id'] ) || ! array_key_exists( $wc_page['page_name'], static::WC_STATUS_PAGES_MAPPED_TO_WIDGETS ) ) {
+			return;
+		}
+
+		if ( isset( $wc_page['shortcode_present'] ) && false !== $wc_page['shortcode_present'] ) {
+			return;
+		}
+
+		$document = Plugin::elementor()->documents->get( $wc_page['page_id'] );
+
+		if ( ! $document || ! $document->is_built_with_elementor() ) {
+			return;
+		}
+
+		$elementor_data = get_post_meta( $wc_page['page_id'], '_elementor_data', true );
+		$widget_name = static::WC_STATUS_PAGES_MAPPED_TO_WIDGETS[ $wc_page['page_name'] ];
+		$widget_exists_in_page = false !== strpos( $elementor_data, $widget_name );
+
+		if ( $widget_exists_in_page ) {
+			$response->data['pages'][ $index ]['shortcode_present'] = true;
+		}
 	}
 
 	public function loop_query( $query_args, $widget ) {
@@ -1412,7 +1548,7 @@ class Module extends Module_Base {
 			return $query_args;
 		}
 
-		return $this->parse_loop_query_args( $widget );
+		return $this->parse_loop_query_args( $widget, $query_args );
 	}
 
 	private function is_product_query( $widget ) {
@@ -1421,7 +1557,9 @@ class Module extends Module_Base {
 		return ( ! empty( $widget_config['is_loop'] ) && 'product' === $widget->get_current_skin_id() );
 	}
 
-	private function parse_loop_query_args( $widget ) {
+	private function parse_loop_query_args( $widget, $query_args ) {
+		global $wp_query;
+
 		$settings = $this->adjust_setting_for_product_renderer( $widget );
 
 		// For Products_Renderer.
@@ -1431,10 +1569,17 @@ class Module extends Module_Base {
 
 		$shortcode = Products_Widget::get_shortcode_object( $settings );
 
-		$query_args = $shortcode->parse_query_args();
-		unset( $query_args['fields'] );
+		$parsed_query_args = $shortcode->parse_query_args();
 
-		return $query_args;
+		if ( empty( $wp_query->include_field_ids_arg ) ) {
+			unset( $parsed_query_args['fields'] );
+		}
+
+		$override_various_query_args = array_filter( $query_args, function( $key ) {
+			return in_array( $key, [ 'posts_per_page', 'offset', 'paged' ], true );
+		}, ARRAY_FILTER_USE_KEY );
+
+		return wp_parse_args( $override_various_query_args, $parsed_query_args );
 	}
 
 	private function adjust_setting_for_product_renderer( $widget ) {
@@ -1493,5 +1638,68 @@ class Module extends Module_Base {
 			'show_in_panel' => false,
 		];
 		return $config;
+	}
+
+	private function populate_persistent_settings( array $config ) {
+		$config['persistent_keys'] = array_key_exists( 'persistent_keys', $config ) ?
+			array_merge( $config['persistent_keys'], self::WC_PERSISTENT_SITE_SETTINGS ) :
+			self::WC_PERSISTENT_SITE_SETTINGS;
+
+		return $config;
+	}
+
+	/**
+	 * Get the base URL for assets.
+	 *
+	 * @return string
+	 */
+	public function get_assets_base_url(): string {
+		return ELEMENTOR_PRO_URL;
+	}
+
+	/**
+	 * Register styles.
+	 *
+	 * At build time, Elementor compiles `/modules/woocommerce/assets/scss/widgets/*.scss`
+	 * to `/assets/css/widget-*.min.css`.
+	 *
+	 * @return void
+	 */
+	public function register_styles(): void {
+		$direction_suffix = is_rtl() ? '-rtl' : '';
+		$widget_styles = $this->get_widgets_style_list();
+		$has_custom_breakpoints = Plugin::elementor()->breakpoints->has_custom_breakpoints();
+
+		foreach ( $widget_styles as $widget_style_name => $widget_has_responsive_style ) {
+			$should_load_responsive_css = $widget_has_responsive_style ? $has_custom_breakpoints : false;
+
+			wp_register_style(
+				$widget_style_name,
+				Plugin::get_frontend_file_url( "{$widget_style_name}{$direction_suffix}.min.css", $should_load_responsive_css ),
+				[ 'elementor-frontend' ],
+				$should_load_responsive_css ? null : ELEMENTOR_PRO_VERSION
+			);
+		}
+	}
+
+	private function get_widgets_style_list(): array {
+		return [
+			'widget-woocommerce-cart' => self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-categories' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-checkout-page' => self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-menu-cart' => self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-my-account' => self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-notices' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-product-add-to-cart' => self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-product-additional-information' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-product-data-tabs' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-product-images' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-product-meta' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-product-price' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-product-rating' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-products' => ! self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-products-archive' => self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+			'widget-woocommerce-purchase-summary' => self::WIDGET_HAS_CUSTOM_BREAKPOINTS,
+		];
 	}
 }

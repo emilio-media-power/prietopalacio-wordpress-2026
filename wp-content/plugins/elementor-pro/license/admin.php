@@ -2,12 +2,20 @@
 namespace ElementorPro\License;
 
 use Elementor\Core\Admin\Admin_Notices;
+use Elementor\Modules\EditorOne\Classes\Menu_Data_Provider;
 use Elementor\Settings;
 use Elementor\Utils;
-use ElementorPro\Core\Utils as Pro_Utils;
+use ElementorPro\Base\Editor_One_Trait;
 use ElementorPro\Core\Connect\Apps\Activate;
+use ElementorPro\Core\Utils as Pro_Utils;
+use ElementorPro\License\API as License_API;
+use ElementorPro\License\Data\Controller;
+use ElementorPro\License\EditorOneMenuItems\Editor_One_License_Menu_Item;
+use ElementorPro\License\EditorOneMenuItems\Editor_One_Renew_Menu_Item;
+use ElementorPro\License\EditorOneMenuItems\Editor_One_Upgrade_Menu_Item;
 use ElementorPro\License\Notices\Trial_Expired_Notice;
 use ElementorPro\License\Notices\Trial_Period_Notice;
+use ElementorPro\License\One;
 use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,6 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Admin {
+	use Editor_One_Trait;
 
 	const PAGE_ID = 'elementor-license';
 
@@ -23,16 +32,20 @@ class Admin {
 	const LICENSE_DATA_FALLBACK_OPTION_NAME = self::LICENSE_DATA_OPTION_NAME . '_fallback';
 
 	/**
-	 * @deprecated 3.6.0 Use Plugin::instance()->updater instead
+	 * @deprecated 3.6.0 Use `Plugin::instance()->updater` instead.
 	 */
 	public static $updater = null;
+
+	public function __construct() {
+		$this->register_rest_controller();
+	}
 
 	public static function get_errors_details() {
 		$license_page_link = self::get_url();
 
 		return [
 			API::STATUS_EXPIRED => [
-				'title' => esc_html__( 'Oh no! Your Elementor Pro license has expired.', 'elementor-pro' ),
+				'title' => esc_html__( 'Your Elementor Pro license has expired.', 'elementor-pro' ),
 				'description' => esc_html__( 'Want to keep creating secure and high-performing websites? Renew your subscription to regain access to all of the Elementor Pro widgets, templates, updates & more', 'elementor-pro' ),
 				'button_text' => esc_html__( 'Renew Now', 'elementor-pro' ),
 				'button_url' => API::RENEW_URL,
@@ -85,7 +98,7 @@ class Admin {
 	}
 
 	/**
-	 * @deprecated 3.6.0 Use Plugin::instance()->updater instead
+	 * @deprecated 3.6.0 Use `Plugin::instance()->updater` instead.
 	 *
 	 * @return \ElementorPro\License\Updater
 	 */
@@ -149,6 +162,10 @@ class Admin {
 	}
 
 	public function register_page() {
+		if ( $this->is_editor_one_active() ) {
+			return;
+		}
+
 		$menu_text = esc_html__( 'License', 'elementor-pro' );
 
 		add_submenu_page(
@@ -175,6 +192,22 @@ class Admin {
 				'elementor_pro_renew_license_menu_link'
 			);
 		}
+
+		if ( ! API::is_license_expired() && API::is_need_to_show_upgrade_promotion() ) {
+			$menu_title = esc_html__( 'Unlock More Features', 'elementor-pro' );
+
+			if ( Pro_Utils::is_sale_time() ) {
+				$menu_title = esc_html__( 'Discounted Upgrades', 'elementor-pro' );
+			}
+
+			add_submenu_page(
+				Settings::PAGE_ID,
+				'',
+				$menu_title,
+				'manage_options',
+				'elementor_pro_upgrade_license_menu_link',
+			);
+		}
 	}
 
 	public static function get_url() {
@@ -192,10 +225,10 @@ class Admin {
 		}
 
 		?>
-		<div class="wrap elementor-admin-page-license">
+		<div class="wrap elementor-admin-page-license <?php echo $this->is_editor_one_active() ? 'elementor-admin-page-license-editor-one' : ''; ?>">
 			<h2 class="wp-heading-inline"><?php echo esc_html__( 'License Settings', 'elementor-pro' ); ?></h2>
 
-			<form class="elementor-license-box" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<form class="<?php echo esc_attr( $this->get_license_box_classes() ); ?>" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'elementor-pro-license' ); ?>
 
 				<?php if ( empty( $license_key ) ) : ?>
@@ -225,9 +258,9 @@ class Admin {
 					<h3>
 						<?php $this->render_part_license_status_header( $license_data ); ?>
 						<small>
-							<?php // Fake link to make the user think something is going on. In fact, every refresh of this page will re-check the license status. ?>
+							<?php // Force-refresh this page to re-check the license status. ?>
 							<a class="button" href="<?php echo esc_url( static::get_url() . '&check-license=1' ); ?>">
-								<i class="eicon-sync"></i>
+								<i class="eicon-sync" aria-hidden="true"></i>
 								<?php echo esc_html__( 'Check license status', 'elementor-pro' ); ?>
 							</a>
 						</small>
@@ -241,6 +274,8 @@ class Admin {
 
 					<?php $this->render_part_error_notification( $license_data ); ?>
 
+					<?php $this->render_part_subscription_info(); ?>
+
 					<p class="e-row-stretch e-row-divider-bottom">
 						<span>
 						<?php
@@ -250,7 +285,7 @@ class Admin {
 							echo sprintf(
 								/* translators: %s: Connected user. */
 								esc_html__( 'You\'re connected as %s.', 'elementor-pro' ),
-								'<strong>' . esc_attr( $this->get_connected_account() ) . '</strong>'
+								'<strong>' . esc_html( $this->get_connected_account() ) . '</strong>'
 							);
 						endif;
 						?>
@@ -270,14 +305,37 @@ class Admin {
 						</a>
 					</p>
 
-					<p class="e-row-stretch">
-						<span><?php echo esc_html__( 'Want to deactivate the license for any reason?', 'elementor-pro' ); ?></span>
-						<a class="button" href="<?php echo esc_url( $this->get_deactivate_url() ); ?>">
-							<?php echo esc_html__( 'Disconnect', 'elementor-pro' ); ?>
-						</a>
-					</p>
+					<?php if ( $this->is_editor_one_active() ) : ?>
+						<p class="e-row-stretch">
+							<span><?php echo esc_html__( 'Want to deactivate the license for any reason?', 'elementor-pro' ); ?></span>
+							<?php if ( One::is_connected() ) : ?>
+								<a class="button" href="<?php echo esc_url( One::get_manage_subscription_url() ); ?>">
+									<?php echo esc_html__( 'Manage Subscription', 'elementor-pro' ); ?>
+								</a>
+							<?php else : ?>
+								<a class="button" href="<?php echo esc_url( $this->get_deactivate_url() ); ?>">
+									<?php echo esc_html__( 'Disconnect', 'elementor-pro' ); ?>
+								</a>
+							<?php endif; ?>
+						</p>
+					<?php else : ?>
+						<p class="e-row-stretch">
+							<span><?php echo esc_html__( 'Want to deactivate the license for any reason?', 'elementor-pro' ); ?></span>
+							<a class="button" href="<?php echo esc_url( $this->get_deactivate_url() ); ?>">
+								<?php echo esc_html__( 'Disconnect', 'elementor-pro' ); ?>
+							</a>
+						</p>
+					<?php endif; ?>
 				<?php endif; ?>
 			</form>
+			<?php if ( License_API::TIER_ESSENENTIAL === License_API::get_access_tier() ) : ?>
+				<p id="tier-upgrade-promotion" class="<?php echo esc_attr( $this->get_license_box_classes( 'e-row-stretch' ) ); ?>">
+					<span><?php echo esc_html__( 'Get more advanced features', 'elementor-pro' ); ?></span>
+					<a class="button elementor-upgrade-link" target="_blank" href="https://go.elementor.com/go-pro-advanced-license-screen/">
+						<?php echo Pro_Utils::is_sale_time() ? esc_html__( 'Discounted Upgrades', 'elementor-pro' ) : esc_html__( 'Upgrade now', 'elementor-pro' ); ?>
+					</a>
+				</p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -288,14 +346,13 @@ class Admin {
 			API::STATUS_SITE_INACTIVE => esc_html__( 'Mismatch', 'elementor-pro' ),
 			API::STATUS_CANCELLED => esc_html__( 'Cancelled', 'elementor-pro' ),
 			API::STATUS_HTTP_ERROR => esc_html__( 'HTTP Error', 'elementor-pro' ),
-			API::STATUS_MISSING => esc_html__( 'Active', 'elementor-pro' ),
+			API::STATUS_MISSING => esc_html__( 'Missing', 'elementor-pro' ),
 			API::STATUS_REQUEST_LOCKED => esc_html__( 'Request Locked', 'elementor-pro' ),
 		];
 
 		echo esc_html__( 'Status', 'elementor-pro' ); ?>:
-		<?php $license_data['success'] = true; ?>
 		<?php if ( $license_data['success'] ) : ?>
-			<span style="color: #172982;"><?php echo esc_html__( 'Activated by Shineads.in', 'elementor-pro' ); ?></span>
+			<span style="color: #008000; font-style: italic;"><?php echo esc_html__( 'Active', 'elementor-pro' ); ?></span>
 
 			<?php
 			$redirect_to_document = Pro_Utils::_unstable_get_super_global_value( $_GET, 'redirect-to-document' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -322,9 +379,9 @@ class Admin {
 
 		if ( API::STATUS_EXPIRED === $license_data['error'] ) : ?>
 			<p class="e-row-divider-bottom elementor-admin-alert elementor-alert-danger">
-				<?php printf(
-				/* translators: 1: Bold text opening tag, 2: Bold text closing tag, 3: Link opening tag, 4: Link closing tag. */
-					esc_html__( '%1$sOh no! Your Elementor Pro license has expired.%2$s Want to keep creating secure and high-performing websites? Renew your subscription to regain access to all of the Elementor Pro widgets, templates, updates & more. %3$sRenew now%4$s', 'elementor-pro' ),
+				<?php echo sprintf(
+					/* translators: 1: Bold text opening tag, 2: Bold text closing tag, 3: Link opening tag, 4: Link closing tag. */
+					esc_html__( '%1$sYour Elementor Pro license has expired.%2$s Want to keep creating secure and high-performing websites? Renew your subscription to regain access to all of the Elementor Pro widgets, templates, updates & more. %3$sRenew now%4$s', 'elementor-pro' ),
 					'<strong>',
 					'</strong>',
 					'<a href="https://go.elementor.com/renew/" target="_blank"><strong>',
@@ -335,14 +392,37 @@ class Admin {
 
 		<?php if ( API::STATUS_SITE_INACTIVE === $license_data['error'] ) : ?>
 			<p class="e-row-divider-bottom elementor-admin-alert elementor-alert-danger">
-				<?php printf(
-				/* translators: 1: Bold text opening tag, 2: Bold text closing tag. */
+				<?php echo sprintf(
+					/* translators: 1: Bold text opening tag, 2: Bold text closing tag. */
 					esc_html__( '%1$sYour license key doesn\'t match your current domain%2$s. This is most likely due to a change in the domain URL of your site (including HTTPS/SSL migration). Please deactivate the license and then reactivate it again.', 'elementor-pro' ),
 					'<strong>',
 					'</strong>'
 				); ?>
 			</p>
 		<?php endif;
+	}
+
+	private function render_part_subscription_info() {
+		if ( ! $this->is_editor_one_active() || ! API::is_license_active() ) {
+			return;
+		}
+
+		$subscription_id = API::get_subscription_id();
+		$subscription_name = One::is_connected()
+			? One::get_subscription_display_name()
+			: API::get_subscription_display_name();
+
+		?>
+		<p class="e-row-stretch e-row-divider-bottom">
+			<span>
+				<strong><?php echo esc_html__( 'Subscription', 'elementor-pro' ); ?>:</strong>
+				<?php echo esc_html( $subscription_name ); ?>
+				<?php if ( $subscription_id ) : ?>
+					- <?php echo esc_html( $subscription_id ); ?>
+				<?php endif; ?>
+			</span>
+		</p>
+		<?php
 	}
 
 	private function is_block_editor_page() {
@@ -421,7 +501,9 @@ class Admin {
 			return;
 		}
 
-		if ( API::is_license_active() && API::is_license_about_to_expire() ) {
+		$should_show_renew_license_notice = apply_filters( 'elementor_pro/license/should_show_renew_license_notice', true );
+
+		if ( API::is_license_active() && API::is_license_about_to_expire() && $should_show_renew_license_notice ) {
 			$title = sprintf(
 				/* translators: %s: Days to expire. */
 				esc_html__( 'Your License Will Expire in %s.', 'elementor-pro' ),
@@ -441,6 +523,12 @@ class Admin {
 				$description = esc_html__( 'Renew your license today, to keep getting feature updates, premium support, Pro widgets & unlimited access to the template library.', 'elementor-pro' );
 			}
 
+			$should_show_renew_license_notice = apply_filters( 'elementor_pro/license/should_show_renew_license_notice', true );
+
+			if ( ! $should_show_renew_license_notice ) {
+				return;
+			}
+
 			$admin_notices->print_admin_notice( [
 				'title' => $title,
 				'description' => $description,
@@ -450,7 +538,7 @@ class Admin {
 					'url' => $renew_url,
 					'type' => 'warning',
 				],
-			] );
+			]);
 		}
 	}
 
@@ -476,13 +564,11 @@ class Admin {
 			delete_option( 'elementor_tracker_notice' );
 		}
 
-		if ( ! isset( $_GET['elementor_tracker'] ) ) {
+		if ( ! $this->is_opt_out_request() || ! $this->is_valid_opt_out_nonce() ) {
 			return;
 		}
 
-		if ( 'opt_out' === $_GET['elementor_tracker'] ) {
-			update_option( 'elementor_pro_tracker_notice', '1' );
-		}
+		update_option( 'elementor_pro_tracker_notice', '1' );
 	}
 
 	public function get_installed_time() {
@@ -543,19 +629,22 @@ class Admin {
 		} );
 
 		add_filter( 'elementor/admin/dashboard_overview_widget/footer_actions', function( $additions_actions ) {
+
 			unset( $additions_actions['go-pro'] );
 
-			// Keep Visible to administrator role or for the Pro license owner, remove for non-owner lower-level user types.
-			if ( ! current_user_can( 'manage_options' ) && isset( $additions_actions['find_an_expert'] ) ) {
-				unset( $additions_actions['find_an_expert'] );
-			}
-
-			if ( current_user_can( 'manage_options' ) && API::is_license_expired() ) {
+			if ( current_user_can( 'manage_options' ) ) {
 				// Using 'go-pro' key to style the 'renew' button as the 'go-pro' button
-				$additions_actions['go-pro'] = [
-					'title' => esc_html__( 'Renew Now', 'elementor-pro' ),
-					'link' => 'https://go.elementor.com/overview-widget-renew/',
-				];
+				if ( API::is_license_expired() ) {
+					$additions_actions['go-pro'] = [
+						'title' => esc_html__( 'Renew Now', 'elementor-pro' ),
+						'link' => 'https://go.elementor.com/overview-widget-renew/',
+					];
+				} elseif ( API::is_need_to_show_upgrade_promotion() ) {
+					$additions_actions['go-pro'] = [
+						'title' => esc_html__( 'Upgrade', 'elementor-pro' ),
+						'link' => 'https://go.elementor.com/go-pro-advanced-wordpress-elementor-overview/',
+					];
+				}
 			}
 
 			return $additions_actions;
@@ -576,7 +665,7 @@ class Admin {
 		<div class="wrap elementor-admin-page-license">
 			<h2><?php echo esc_html__( 'License Settings', 'elementor-pro' ); ?></h2>
 
-			<form class="elementor-license-box" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<form class="<?php echo esc_attr( $this->get_license_box_classes() ); ?>" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'elementor-pro-license' ); ?>
 
 				<h3>
@@ -596,7 +685,7 @@ class Admin {
 
 					<ol>
 						<li>
-							<?php printf(
+							<?php echo sprintf(
 								/* translators: 1: Link opening tag, 2: Link closing tag. */
 								esc_html__( 'Log in to %1$syour account%2$s to get your license key.', 'elementor-pro' ),
 								'<a href="https://go.elementor.com/my-license/" target="_blank">',
@@ -604,7 +693,7 @@ class Admin {
 							); ?>
 						</li>
 						<li>
-							<?php printf(
+							<?php echo sprintf(
 								/* translators: 1: Link opening tag, 2: Link closing tag. */
 								esc_html__( 'If you don\'t yet have a license key, %1$sget Elementor Pro now%2$s.', 'elementor-pro' ),
 								'<a href="https://go.elementor.com/pro-license/" target="_blank">',
@@ -620,12 +709,12 @@ class Admin {
 
 					<label for="elementor-pro-license-key"><?php echo esc_html__( 'Your License Key', 'elementor-pro' ); ?></label>
 
-					<input id="elementor-pro-license-key" class="regular-text code" name="elementor_pro_license_key" type="text" value="" placeholder="<?php esc_attr_e( 'Please enter your license key here', 'elementor-pro' ); ?>"/>
+					<input id="elementor-pro-license-key" class="regular-text code" name="elementor_pro_license_key" type="text" value="" placeholder="<?php echo esc_attr__( 'Please enter your license key here', 'elementor-pro' ); ?>"/>
 
-					<input type="submit" class="button button-primary" value="<?php esc_attr_e( 'Activate', 'elementor-pro' ); ?>"/>
+					<input type="submit" class="button button-primary" value="<?php echo esc_attr__( 'Activate', 'elementor-pro' ); ?>"/>
 
 					<p class="description">
-						<?php printf(
+						<?php echo sprintf(
 							/* translators: %s: Example license key. */
 							esc_html__( 'Your license key should look something like this: %s', 'elementor-pro' ),
 							'<code>fb351f05958872E193feb37a505a84be</code>'
@@ -641,7 +730,7 @@ class Admin {
 
 					<input id="elementor-pro-license-key" class="regular-text code" type="text" value="<?php echo esc_attr( self::get_hidden_license_key() ); ?>" disabled/>
 
-					<input type="submit" class="button" value="<?php esc_attr_e( 'Deactivate', 'elementor-pro' ); ?>"/>
+					<input type="submit" class="button" value="<?php echo esc_attr__( 'Deactivate', 'elementor-pro' ); ?>"/>
 
 					<p><?php $this->render_part_license_status_header( $license_data ); ?></p>
 					<?php $this->render_part_error_notification( $license_data ); ?>
@@ -714,11 +803,19 @@ class Admin {
 		}
 	}
 
+	public function register_editor_one_menu( Menu_Data_Provider $menu_data_provider ): void {
+		$menu_data_provider->register_menu( new Editor_One_License_Menu_Item() );
+		$menu_data_provider->register_menu( new Editor_One_Renew_Menu_Item() );
+		$menu_data_provider->register_menu( new Editor_One_Upgrade_Menu_Item() );
+	}
+
 	public function register_actions() {
 		add_action( 'admin_menu', [ $this, 'register_page' ], 800 );
 		add_action( 'admin_init', [ $this, 'handle_tracker_actions' ], 9 );
 		add_action( 'admin_post_elementor_pro_activate_license', [ $this, 'action_activate_license' ] );
 		add_action( 'admin_post_elementor_pro_deactivate_license', [ $this, 'action_deactivate_license' ] );
+
+		add_action( 'elementor/editor-one/menu/register', [ $this, 'register_editor_one_menu' ] );
 
 		add_action( 'admin_notices', [ $this, 'admin_license_details' ], 20 );
 
@@ -736,7 +833,41 @@ class Admin {
 		add_filter( 'elementor/finder/categories', [ $this, 'add_finder_item' ] );
 		add_filter( 'plugin_action_links_' . ELEMENTOR_PRO_PLUGIN_BASE, [ $this, 'plugin_action_links' ], 50 );
 		add_filter( 'plugin_auto_update_setting_html', [ $this, 'plugin_auto_update_setting_html' ], 10, 2 );
+		add_filter( 'elementor/admin/homescreen_promotion_tier', function ( $tier ) {
+			if ( API::is_license_expired() ) {
+				return API::STATUS_EXPIRED;
+			}
+			return API::get_access_tier();
+		} );
 
 		$this->handle_dashboard_admin_widget();
+	}
+
+	private function is_opt_out_request(): bool {
+		return 'opt_out' === Utils::get_super_global_value( $_GET, 'elementor_tracker' );
+	}
+
+	private function is_valid_opt_out_nonce() {
+		$nonce = Utils::get_super_global_value( $_REQUEST, '_wpnonce' );
+
+		return wp_verify_nonce( $nonce, 'opt_out' );
+	}
+
+	private function register_rest_controller() {
+		new Controller();
+	}
+
+	private function get_license_box_classes( string $additional_classes = '' ): string {
+		$classes = [ 'elementor-license-box' ];
+
+		if ( $additional_classes ) {
+			$classes[] = $additional_classes;
+		}
+
+		if ( $this->is_editor_one_active() ) {
+			$classes[] = 'e-one-section-outlined';
+		}
+
+		return implode( ' ', $classes );
 	}
 }

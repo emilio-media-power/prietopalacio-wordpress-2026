@@ -56,8 +56,8 @@ class Getresponse extends Integration_Base {
 				'type' => Controls_Manager::SELECT,
 				'label_block' => false,
 				'options' => [
-					'default' => 'Default',
-					'custom' => 'Custom',
+					'default' => esc_html__( 'Default', 'elementor-pro' ),
+					'custom' => esc_html__( 'Custom', 'elementor-pro' ),
 				],
 				'default' => 'default',
 			]
@@ -71,6 +71,9 @@ class Getresponse extends Integration_Base {
 				'description' => esc_html__( 'Use this field to set a custom API Key for the current form', 'elementor-pro' ),
 				'condition' => [
 					'getresponse_api_key_source' => 'custom',
+				],
+				'ai' => [
+					'active' => false,
 				],
 			]
 		);
@@ -273,6 +276,11 @@ class Getresponse extends Integration_Base {
 		if ( ! isset( $_POST['api_key'] ) ) {
 			wp_send_json_error();
 		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Permission denied' );
+		}
+
 		try {
 			new Getresponse_Handler( $_POST['api_key'] ); // phpcs:ignore -- No need to sanitize to support special characters.
 		} catch ( \Exception $exception ) {

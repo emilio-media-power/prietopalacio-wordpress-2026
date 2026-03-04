@@ -2,6 +2,7 @@
 namespace ElementorPro\Modules\ThemeBuilder\Documents;
 
 use Elementor\DB;
+use ElementorPro\Modules\FloatingButtons\Documents\Floating_Buttons;
 use ElementorPro\Modules\ThemeBuilder\Module;
 use ElementorPro\Plugin;
 
@@ -79,12 +80,18 @@ abstract class Single_Base extends Archive_Single_Base {
 		if ( $requested_post_id !== $this->post->ID ) {
 			$requested_document = Module::instance()->get_document( $requested_post_id );
 
+			if ( $requested_document instanceof Floating_Buttons ) {
+				$requested_document->print_content();
+				parent::print_content();
+				return;
+			}
+
 			/**
 			 * if current requested document is theme-document & it's not a content type ( like header/footer/sidebar )
 			 * show a placeholder instead of content.
 			 */
 			if ( $requested_document && ! $requested_document instanceof Section && $requested_document->get_location() !== $this->get_location() ) {
-				echo '<div class="elementor-theme-builder-content-area">' . esc_html__( 'Content Area', 'elementor-pro' ) . '</div>';
+				echo '<div class="elementor-theme-builder-content-area">' . esc_html__( 'Content area', 'elementor-pro' ) . '</div>';
 
 				return;
 			}
@@ -170,9 +177,9 @@ abstract class Single_Base extends Archive_Single_Base {
 
 		wp_localize_script( 'elementor-frontend', 'elementorPreviewErrorArgs', [
 			/* translators: %s: Widget name. */
-			'headerMessage' => sprintf( esc_html__( 'The %s Widget was not found in your template.', 'elementor-pro' ), $depended_widget_title ),
+			'headerMessage' => sprintf( esc_html__( 'The %s widget was not found in your template.', 'elementor-pro' ), $depended_widget_title ),
 			/* translators: 1: Widget name, 2: Template name.  */
-			'message' => sprintf( esc_html__( 'You must include the %1$s Widget in your template (%2$s), in order for Elementor to work on this page.', 'elementor-pro' ), $depended_widget_title, '<strong>' . static::get_title() . '</strong>' ),
+			'message' => sprintf( esc_html__( 'You must include the %1$s widget in your template (%2$s), in order for Elementor to work on this page.', 'elementor-pro' ), $depended_widget_title, '<strong>' . static::get_title() . '</strong>' ),
 			'strings' => [
 				'confirm' => esc_html__( 'Edit Template', 'elementor-pro' ),
 			],

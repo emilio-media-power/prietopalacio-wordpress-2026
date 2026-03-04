@@ -29,7 +29,15 @@ class Code_Highlight extends Base_Widget {
 	}
 
 	public function get_style_depends() {
-		return [ 'prismjs_style' ];
+		return [ 'widget-code-highlight' ];
+	}
+
+	protected function is_dynamic_content(): bool {
+		return false;
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
 	}
 
 	public function get_script_depends() {
@@ -60,16 +68,6 @@ class Code_Highlight extends Base_Widget {
 		}
 
 		return array_keys( $depends );
-	}
-
-	public function get_css_config() {
-		// This widget is loading its own CSS using get_style_depends.
-		return [
-			'key' => $this->get_group_name(),
-			'version' => ELEMENTOR_PRO_VERSION,
-			'file_path' => '',
-			'data' => [],
-		];
 	}
 
 	protected function register_controls() {
@@ -238,6 +236,10 @@ class Code_Highlight extends Base_Widget {
 						'min' => 6,
 						'max' => 50,
 					],
+					'rem' => [
+						'min' => 6,
+						'max' => 50,
+					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .highlight-height' => 'height: {{SIZE}}{{UNIT}};',
@@ -255,6 +257,12 @@ class Code_Highlight extends Base_Widget {
 					'px' => [
 						'min' => 1,
 						'max' => 200,
+					],
+					'em' => [
+						'max' => 20,
+					],
+					'rem' => [
+						'max' => 20,
 					],
 					'vw' => [
 						'min' => 0.1,
@@ -274,6 +282,10 @@ class Code_Highlight extends Base_Widget {
 
 	protected function render() {
 		$settings = $this->get_settings_for_display();
+
+		if ( empty( $settings['code'] ) ) {
+			return;
+		}
 		?>
 		<div class="<?php echo 'prismjs-' . esc_attr( $settings['theme'] ); ?> <?php echo esc_attr( $settings['copy_to_clipboard'] ); ?> <?php echo esc_attr( $settings['word_wrap'] ); ?>">
 			<pre data-line="<?php echo esc_attr( $settings['highlight_lines'] ); ?>" class="highlight-height language-<?php echo esc_attr( $settings['language'] ); ?> <?php echo esc_attr( $settings['line_numbers'] ); ?>">
@@ -287,9 +299,14 @@ class Code_Highlight extends Base_Widget {
 
 	protected function content_template() {
 		?>
-		<div class="prismjs-{{{ settings.theme }}} {{{settings.copy_to_clipboard}}} {{{settings.word_wrap}}}">
-			<pre data-line="{{{settings.highlight_lines }}}" class="highlight-height language-{{{ settings.language }}} {{{ settings.line_numbers }}}">
-				<code readonly="true" class="language-{{{ settings.language }}}">
+		<#
+		if ( '' === settings.code ) {
+			return;
+		}
+		#>
+		<div class="prismjs-{{ settings.theme }} {{ settings.copy_to_clipboard }} {{ settings.word_wrap }}">
+			<pre data-line="{{ settings.highlight_lines }}" class="highlight-height language-{{ settings.language }} {{ settings.line_numbers }}">
+				<code readonly="true" class="language-{{ settings.language }}">
 					<xmp>{{{ settings.code }}}</xmp>
 				</code>
 			</pre>

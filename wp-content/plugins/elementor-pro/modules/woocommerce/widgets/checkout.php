@@ -10,14 +10,12 @@ use Elementor\Group_Control_Border;
 use Elementor\Repeater;
 use Elementor\Group_Control_Background;
 use Elementor\Core\Kits\Documents\Tabs\Global_Typography;
-use Elementor\Core\Breakpoints\Manager as Breakpoints_Manager;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
 class Checkout extends Base_Widget {
-
 	private $reformatted_form_fields;
 
 	public function get_name() {
@@ -52,8 +50,8 @@ class Checkout extends Base_Widget {
 		];
 	}
 
-	public function get_style_depends() {
-		return [ 'select2' ];
+	public function get_style_depends(): array {
+		return [ 'widget-woocommerce-checkout-page', 'select2' ];
 	}
 
 	protected function register_controls() {
@@ -486,7 +484,7 @@ class Checkout extends Base_Widget {
 			'terms_conditions_heading',
 			[
 				'type' => Controls_Manager::HEADING,
-				'label' => esc_html__( 'Terms &amp; Conditions', 'elementor-pro' ),
+				'label' => esc_html__( 'Terms & Conditions', 'elementor-pro' ),
 			]
 		);
 
@@ -721,11 +719,15 @@ class Checkout extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
 					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
+					],
 				],
-				'default' => [ 'px' => 0 ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--sections-title-spacing: {{SIZE}}{{UNIT}};',
 				],
@@ -768,11 +770,15 @@ class Checkout extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
 					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
+					],
 				],
-				'default' => [ 'px' => 0 ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--sections-secondary-title-spacing: {{SIZE}}{{UNIT}};',
 				],
@@ -815,11 +821,15 @@ class Checkout extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
 					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
+					],
 				],
-				'default' => [ 'px' => 0 ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--sections-descriptions-spacing: {{SIZE}}{{UNIT}};',
 				],
@@ -976,11 +986,15 @@ class Checkout extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
 					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
+					],
 				],
-				'default' => [ 'px' => 0 ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--forms-columns-gap-padding: calc( {{SIZE}}{{UNIT}}/2 ); --forms-columns-gap-margin: calc( -{{SIZE}}{{UNIT}}/2 );',
 				],
@@ -995,11 +1009,15 @@ class Checkout extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
-						'max' => 60,
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
-				'default' => [ 'px' => 0 ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--forms-rows-gap: {{SIZE}}{{UNIT}};',
 				],
@@ -1041,11 +1059,15 @@ class Checkout extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
-						'max' => 60,
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
-				'default' => [ 'px' => 0 ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--forms-label-spacing: {{SIZE}}{{UNIT}};',
 				],
@@ -1157,14 +1179,15 @@ class Checkout extends Base_Widget {
 			[
 				'label' => esc_html__( 'Transition Duration', 'elementor-pro' ) . ' (ms)',
 				'type' => Controls_Manager::SLIDER,
-				'selectors' => [
-					'{{WRAPPER}}' => '--forms-fields-focus-transition-duration: {{SIZE}}ms',
-				],
 				'range' => [
 					'px' => [
 						'min' => 0,
 						'max' => 3000,
+						'step' => 100,
 					],
+				],
+				'selectors' => [
+					'{{WRAPPER}}' => '--forms-fields-focus-transition-duration: {{SIZE}}ms',
 				],
 			]
 		);
@@ -1320,14 +1343,15 @@ class Checkout extends Base_Widget {
 			[
 				'label' => esc_html__( 'Transition Duration', 'elementor-pro' ) . ' (ms)',
 				'type' => Controls_Manager::SLIDER,
-				'selectors' => [
-					'{{WRAPPER}}' => '--forms-buttons-hover-transition-duration: {{SIZE}}ms',
-				],
 				'range' => [
 					'px' => [
 						'min' => 0,
 						'max' => 3000,
+						'step' => 100,
 					],
+				],
+				'selectors' => [
+					'{{WRAPPER}}' => '--forms-buttons-hover-transition-duration: {{SIZE}}ms',
 				],
 			]
 		);
@@ -1428,11 +1452,15 @@ class Checkout extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
-						'max' => 60,
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
-				'default' => [ 'px' => 0 ],
 				'selectors' => [
 					'{{WRAPPER}}' => '--order-summary-rows-gap-top: calc( {{SIZE}}{{UNIT}}/2 ); --order-summary-rows-gap-bottom: calc( {{SIZE}}{{UNIT}}/2 );',
 				],
@@ -1696,14 +1724,15 @@ class Checkout extends Base_Widget {
 			[
 				'label' => esc_html__( 'Transition Duration', 'elementor-pro' ) . ' (ms)',
 				'type' => Controls_Manager::SLIDER,
-				'selectors' => [
-					'{{WRAPPER}}' => '--purchase-button-hover-transition-duration: {{SIZE}}ms',
-				],
 				'range' => [
 					'px' => [
 						'min' => 0,
 						'max' => 3000,
+						'step' => 100,
 					],
+				],
+				'selectors' => [
+					'{{WRAPPER}}' => '--purchase-button-hover-transition-duration: {{SIZE}}ms',
 				],
 			]
 		);
@@ -3984,11 +4013,11 @@ class Checkout extends Base_Widget {
 				<div class="e-login-wrap">
 					<div class="e-login-wrap-start">
 						<p class="form-row form-row-first">
-							<label for="username"><?php esc_html_e( 'Email', 'elementor-pro' ); ?> <span class="required">*</span></label>
+							<label for="username"><?php echo esc_html__( 'Email', 'elementor-pro' ); ?> <span class="required">*</span></label>
 							<input type="text" class="input-text" name="username" id="username" autocomplete="username" />
 						</p>
 						<p class="form-row form-row-last">
-							<label for="password"><?php esc_html_e( 'Password', 'elementor-pro' ); ?> <span class="required">*</span></label>
+							<label for="password"><?php echo esc_html__( 'Password', 'elementor-pro' ); ?> <span class="required">*</span></label>
 							<input class="input-text" type="password" name="password" id="password" autocomplete="current-password" />
 						</p>
 						<div class="clear"></div>
@@ -3999,7 +4028,7 @@ class Checkout extends Base_Widget {
 							<label for="login" class="e-login-label">&nbsp;</label>
 							<?php wp_nonce_field( 'woocommerce-login', 'woocommerce-login-nonce' ); ?>
 							<input type="hidden" name="redirect" value="<?php echo esc_url( get_permalink() ); ?>" />
-							<button <?php $this->print_render_attribute_string( 'button_login' ); ?> value="<?php esc_attr_e( 'Login', 'elementor-pro' ); ?>"><?php esc_html_e( 'Login', 'elementor-pro' ); ?></button>
+							<button <?php $this->print_render_attribute_string( 'button_login' ); ?> value="<?php echo esc_attr__( 'Login', 'elementor-pro' ); ?>"><?php echo esc_html__( 'Login', 'elementor-pro' ); ?></button>
 						</p>
 						<div class="clear"></div>
 					</div>
@@ -4008,13 +4037,13 @@ class Checkout extends Base_Widget {
 				<div class="e-login-actions-wrap">
 					<div class="e-login-actions-wrap-start">
 						<label class="woocommerce-form__label woocommerce-form__label-for-checkbox woocommerce-form-login__rememberme">
-							<input class="woocommerce-form__input woocommerce-form__input-checkbox" name="rememberme" type="checkbox" id="rememberme" value="forever" /> <span class="elementor-woocomemrce-login-rememberme"><?php esc_html_e( 'Remember me', 'elementor-pro' ); ?></span>
+							<input class="woocommerce-form__input woocommerce-form__input-checkbox" name="rememberme" type="checkbox" id="rememberme" value="forever" /> <span class="elementor-woocomemrce-login-rememberme"><?php echo esc_html__( 'Remember me', 'elementor-pro' ); ?></span>
 						</label>
 					</div>
 
 					<div class="e-login-actions-wrap-end">
 						<p class="lost_password">
-							<a href="<?php echo esc_url( wp_lostpassword_url() ); ?>"><?php esc_html_e( 'Lost your password?', 'elementor-pro' ); ?></a>
+							<a href="<?php echo esc_url( wp_lostpassword_url() ); ?>"><?php echo esc_html__( 'Lost your password?', 'elementor-pro' ); ?></a>
 						</p>
 					</div>
 				</div>
@@ -4055,16 +4084,16 @@ class Checkout extends Base_Widget {
 		);
 		?>
 		<div class="e-coupon-box">
-			<p class="e-woocommerce-coupon-nudge e-checkout-secondary-title"><?php esc_html_e( 'Have a coupon?', 'elementor-pro' ); ?> <a href="#" class="e-show-coupon-form"><?php esc_html_e( 'Click here to enter your coupon code', 'elementor-pro' ); ?></a></p>
+			<p class="e-woocommerce-coupon-nudge e-checkout-secondary-title"><?php echo esc_html__( 'Have a coupon?', 'elementor-pro' ); ?> <a href="#" class="e-show-coupon-form"><?php echo esc_html__( 'Click here to enter your coupon code', 'elementor-pro' ); ?></a></p>
 			<div class="e-coupon-anchor" style="display:none">
-				<label class="e-coupon-anchor-description"><?php esc_html_e( 'If you have a coupon code, please apply it below.', 'elementor-pro' ); ?></label>
+				<label class="e-coupon-anchor-description"><?php echo esc_html__( 'If you have a coupon code, please apply it below.', 'elementor-pro' ); ?></label>
 				<div class="form-row">
 					<div class="coupon-container-grid">
 						<div class="col coupon-col-1 ">
-							<input type="text" name="coupon_code" class="input-text" placeholder="<?php esc_attr_e( 'Coupon code', 'elementor-pro' ); ?>" id="coupon_code" value="" />
+							<input type="text" name="coupon_code" class="input-text" placeholder="<?php echo esc_attr__( 'Coupon code', 'elementor-pro' ); ?>" id="coupon_code" value="" />
 						</div>
 						<div class="col coupon-col-2">
-							<button <?php $this->print_render_attribute_string( 'button_coupon' ); ?>><?php esc_html_e( 'Apply', 'elementor-pro' ); ?></button>
+							<button <?php $this->print_render_attribute_string( 'button_coupon' ); ?>><?php echo esc_html__( 'Apply', 'elementor-pro' ); ?></button>
 						</div>
 					</div>
 				</div>

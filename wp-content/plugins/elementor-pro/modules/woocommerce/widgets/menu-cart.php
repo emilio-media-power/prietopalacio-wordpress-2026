@@ -11,6 +11,7 @@ use Elementor\Group_Control_Background;
 use ElementorPro\Modules\Woocommerce\Module;
 use Elementor\Utils;
 use Elementor\Group_Control_Image_Size;
+use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -32,6 +33,24 @@ class Menu_Cart extends Base_Widget {
 
 	public function get_categories() {
 		return [ 'theme-elements', 'woocommerce-elements' ];
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-woocommerce-menu-cart' ];
 	}
 
 	protected function register_controls() {
@@ -279,6 +298,14 @@ class Menu_Cart extends Base_Widget {
 						'min' => -300,
 						'max' => 300,
 					],
+					'em' => [
+						'min' => -30,
+						'max' => 30,
+					],
+					'rem' => [
+						'min' => -30,
+						'max' => 30,
+					],
 					'%' => [
 						'min' => -100,
 						'max' => 100,
@@ -317,6 +344,7 @@ class Menu_Cart extends Base_Widget {
 				'selectors_dictionary' => [
 					'' => 'display: none;',
 				],
+				'control_type' => 'content',
 			]
 		);
 
@@ -863,6 +891,9 @@ class Menu_Cart extends Base_Widget {
 					'em' => [
 						'max' => 2,
 					],
+					'rem' => [
+						'max' => 2,
+					],
 				],
 				'separator' => 'before',
 				'selectors' => [
@@ -879,14 +910,18 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
 					'{{WRAPPER}}' => '--toggle-button-border-radius: {{SIZE}}{{UNIT}}',
 				],
-
 			]
 		);
 
@@ -922,8 +957,13 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
-						'max' => 50,
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -940,13 +980,44 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
-						'max' => 50,
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
-					'body:not(.rtl) {{WRAPPER}} .elementor-menu-cart__toggle .elementor-button-text' => 'margin-right: {{SIZE}}{{UNIT}};',
-					'body.rtl {{WRAPPER}} .elementor-menu-cart__toggle .elementor-button-text' => 'margin-left: {{SIZE}}{{UNIT}};',
+					'{{WRAPPER}} .elementor-menu-cart__toggle .elementor-button' => 'gap: {{SIZE}}{{UNIT}};',
+				],
+				'condition' => [
+					'show_subtotal!' => '',
+				],
+			]
+		);
+
+		$start = is_rtl() ? 'right' : 'left';
+		$end = is_rtl() ? 'left' : 'right';
+
+		$this->add_control(
+			'toggle_icon_position',
+			[
+				'label' => esc_html__( 'Position', 'elementor-pro' ),
+				'type' => Controls_Manager::CHOOSE,
+				'options' => [
+					'row-reverse' => [
+						'title' => esc_html__( 'Start', 'elementor-pro' ),
+						'icon' => "eicon-h-align-{$start}",
+					],
+					'row' => [
+						'title' => esc_html__( 'End', 'elementor-pro' ),
+						'icon' => "eicon-h-align-{$end}",
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .elementor-menu-cart__toggle .elementor-button' => 'flex-direction: {{VALUE}};',
 				],
 				'condition' => [
 					'show_subtotal!' => '',
@@ -1013,9 +1084,13 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
 				'range' => [
 					'em' => [
-						'min' => 0,
-						'max' => 4,
-						'step' => 0.1,
+						'max' => 50,
+					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
 					],
 				],
 				'selectors' => [
@@ -1606,8 +1681,13 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 10,
+					],
+					'em' => [
+						'max' => 1,
+					],
+					'rem' => [
+						'max' => 1,
 					],
 				],
 				'selectors' => [
@@ -1624,8 +1704,13 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 50,
+					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
 					],
 				],
 				'selectors' => [
@@ -1692,8 +1777,13 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 50,
+					],
+					'em' => [
+						'max' => 5,
+					],
+					'rem' => [
+						'max' => 5,
 					],
 				],
 				'selectors' => [
@@ -1725,8 +1815,13 @@ class Menu_Cart extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -2171,6 +2266,9 @@ class Menu_Cart extends Base_Widget {
 
 	protected function render() {
 		$settings = $this->get_settings_for_display();
+		if ( ! wp_script_is( 'wc-cart-fragments' ) ) {
+			wp_enqueue_script( 'wc-cart-fragments' );
+		}
 
 		$this->maybe_use_mini_cart_template();
 		Module::render_menu_cart( $settings );

@@ -23,13 +23,29 @@ class Shortcode {
 	}
 
 	public function admin_columns_content( $column_name, $post_id ) {
-		if ( 'shortcode' === $column_name ) {
-			printf(
-				'<input class="elementor-shortcode-input" type="text" readonly onfocus="this.select()" value="%s" />',
-				// %s = shortcode, %d = post_id
-				esc_attr( sprintf( '[%s id="%d"]', self::SHORTCODE, $post_id ) )
-			);
+		if ( 'shortcode' !== $column_name ) {
+			return;
 		}
+
+		printf(
+			'<label class="screen-reader-text" for="%1$s">%2$s</label><textarea class="elementor-shortcode-textarea" id="%1$s" readonly rows="1" onfocus="this.select()">%3$s</textarea>',
+			sprintf(
+				/* translators: %s: Template ID. */
+				esc_attr( 'elementor-template-%s-shortcode' ),
+				$post_id // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			),
+			sprintf(
+				/* translators: %s: Template ID. */
+				esc_html__( 'Elementor template shortcode for template %s', 'elementor-pro' ),
+				$post_id // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			),
+			sprintf(
+				/* translators: %s: Shortcode, %d: Template ID. */
+				esc_textarea( '[%s id="%d"]' ),
+				self::SHORTCODE, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				$post_id // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			)
+		);
 	}
 
 	public function shortcode( $attributes = [] ) {

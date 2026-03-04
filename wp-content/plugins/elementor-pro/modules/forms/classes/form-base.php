@@ -54,7 +54,7 @@ abstract class Form_Base extends Base_Widget {
 		}
 
 		if ( $item['required'] ) {
-			$this->add_required_attribute( 'textarea' . $item_index );
+			$this->add_render_attribute( 'textarea' . $item_index, 'required', 'required' );
 		}
 
 		$value = empty( $item['field_value'] ) ? '' : $item['field_value'];
@@ -85,7 +85,7 @@ abstract class Form_Base extends Base_Widget {
 		);
 
 		if ( $item['required'] ) {
-			$this->add_required_attribute( 'select' . $i );
+			$this->add_render_attribute( 'select' . $i, 'required', 'required' );
 		}
 
 		if ( $item['allow_multiple'] ) {
@@ -119,7 +119,7 @@ abstract class Form_Base extends Base_Widget {
 			<select <?php $this->print_render_attribute_string( 'select' . $i ); ?>>
 				<?php
 				foreach ( $options as $key => $option ) {
-					$option_id = $item['custom_id'] . $key;
+					$option_id = esc_attr( $item['custom_id'] . $key );
 					$option_value = esc_attr( $option );
 					$option_label = esc_html( $option );
 
@@ -151,9 +151,9 @@ abstract class Form_Base extends Base_Widget {
 		$options = preg_split( "/\\r\\n|\\r|\\n/", $item['field_options'] );
 		$html = '';
 		if ( $options ) {
-			$html .= '<div class="elementor-field-subgroup ' . esc_attr( $item['css_classes'] ) . ' ' . $item['inline_list'] . '">';
+			$html .= '<div class="elementor-field-subgroup ' . esc_attr( $item['css_classes'] ) . ' ' . esc_attr( $item['inline_list'] ) . '">';
 			foreach ( $options as $key => $option ) {
-				$element_id = $item['custom_id'] . $key;
+				$element_id = esc_attr( $item['custom_id'] ) . $key;
 				$html_id = $this->get_attribute_id( $item ) . '-' . $key;
 				$option_label = $option;
 				$option_value = $option;
@@ -176,7 +176,7 @@ abstract class Form_Base extends Base_Widget {
 				}
 
 				if ( $item['required'] && 'radio' === $type ) {
-					$this->add_required_attribute( $element_id );
+					$this->add_render_attribute( $element_id, 'required', 'required' );
 				}
 
 				$html .= '<span class="elementor-field-option"><input ' . $this->get_render_attribute_string( $element_id ) . '> <label for="' . $html_id . '">' . $option_label . '</label></span>';
@@ -252,7 +252,7 @@ abstract class Form_Base extends Base_Widget {
 				$class .= ' elementor-mark-required';
 			}
 			$this->add_render_attribute( 'field-group' . $i, 'class', $class );
-			$this->add_required_attribute( 'input' . $i );
+			$this->add_render_attribute( 'input' . $i, 'required', 'required' );
 		}
 	}
 
@@ -263,11 +263,6 @@ abstract class Form_Base extends Base_Widget {
 	}
 
 	public function get_attribute_id( $item ) {
-		return 'form-field-' . $item['custom_id'];
-	}
-
-	private function add_required_attribute( $element ) {
-		$this->add_render_attribute( $element, 'required', 'required' );
-		$this->add_render_attribute( $element, 'aria-required', 'true' );
+		return 'form-field-' . esc_attr( $item['custom_id'] );
 	}
 }

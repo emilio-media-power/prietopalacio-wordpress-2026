@@ -7,13 +7,17 @@ use Elementor\Core\Base\Document as DocumentBase;
 use Elementor\Core\Common\Modules\Ajax\Module as Ajax;
 use Elementor\Core\Documents_Manager;
 use Elementor\Core\DynamicTags\Manager as DynamicTagsManager;
+use Elementor\Modules\EditorOne\Classes\Menu_Data_Provider;
 use Elementor\TemplateLibrary\Source_Local;
+use ElementorPro\Base\Editor_One_Trait;
 use ElementorPro\Base\Module_Base;
 use ElementorPro\Core\Behaviors\Feature_Lock;
 use ElementorPro\Core\Utils;
 use ElementorPro\License\API;
 use ElementorPro\Modules\Popup\AdminMenuItems\Popups_Menu_Item;
 use ElementorPro\Modules\Popup\AdminMenuItems\Popups_Promotion_Menu_Item;
+use ElementorPro\Modules\Popup\EditorOneMenuItems\Editor_One_Popups_Menu_Item;
+use ElementorPro\Modules\Popup\EditorOneMenuItems\Editor_One_Popups_Promotion;
 use ElementorPro\Modules\ThemeBuilder\Classes\Locations_Manager;
 use ElementorPro\Plugin;
 
@@ -22,6 +26,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Module extends Module_Base {
+	use Editor_One_Trait;
+
 	const DOCUMENT_TYPE = 'popup';
 
 	const PROMOTION_MENU_SLUG = 'e-popups';
@@ -31,14 +37,25 @@ class Module extends Module_Base {
 	public function __construct() {
 		parent::__construct();
 
-		// TODO: Maybe just ignore all of those when the user can't use popups?
-		add_action( 'elementor/documents/register', [ $this, 'register_documents' ] );
-		add_action( 'elementor/theme/register_locations', [ $this, 'register_location' ] );
-		add_action( 'elementor/dynamic_tags/register', [ $this, 'register_tag' ] );
-		add_action( 'elementor/ajax/register_actions', [ $this, 'register_ajax_actions' ] );
+		add_action( 'admin_init', [ $this, 'redirect_legacy_popups_promotion_url' ] );
 
-		add_action( 'wp_footer', [ $this, 'print_popups' ] );
-		add_action( 'elementor_pro/init', [ $this, 'add_form_action' ] );
+		add_action( 'elementor/frontend/after_register_styles', [ $this, 'register_frontend_styles' ] );
+		add_action( 'elementor/preview/enqueue_styles', [ $this, 'enqueue_preview_styles' ] );
+
+		if ( $this->can_use_popups() ) {
+			add_action( 'elementor/documents/register', [ $this, 'register_documents' ] );
+			add_action( 'elementor/theme/register_locations', [ $this, 'register_location' ] );
+			add_action( 'elementor/dynamic_tags/register', [ $this, 'register_tag' ] );
+			add_action( 'elementor/ajax/register_actions', [ $this, 'register_ajax_actions' ] );
+
+			add_action( 'wp_footer', [ $this, 'print_popups' ] );
+			add_action( 'elementor_pro/init', [ $this, 'add_form_action' ] );
+
+			add_action( 'elementor/frontend/before_register_styles', [ $this, 'register_styles' ] );
+		} else {
+			add_action( 'load-post.php', [ $this, 'disable_editing' ] );
+			add_action( 'admin_init', [ $this, 'maybe_redirect_to_promotion_page' ] );
+		}
 
 		if ( Plugin::elementor()->experiments->is_feature_active( 'admin_menu_rearrangement' ) ) {
 			add_action( 'elementor/admin/menu_registered/elementor', function( MainMenu $menu ) {
@@ -46,6 +63,10 @@ class Module extends Module_Base {
 			} );
 		} else {
 			add_action( 'elementor/admin/menu/register', function( Admin_Menu_Manager $admin_menu_manager ) {
+				if ( $this->is_editor_one_active() ) {
+					return;
+				}
+
 				if ( $this->can_use_popups() ) {
 					$admin_menu_manager->register( $this->get_admin_url( true ), new Popups_Menu_Item() );
 				} else {
@@ -57,9 +78,107 @@ class Module extends Module_Base {
 			add_action( 'admin_menu', function() {
 				$this->register_admin_menu_legacy();
 			}, 21 /* After `Admin_Menu_Manager` */ );
+
+			add_action( 'elementor/editor-one/menu/register', function ( Menu_Data_Provider $menu_data_provider ) {
+				if ( $this->can_use_popups() ) {
+					$menu_data_provider->register_menu( new Editor_One_Popups_Menu_Item() );
+				} else {
+					$menu_data_provider->register_menu( new Editor_One_Popups_Promotion() );
+				}
+			} );
 		}
 
 		add_filter( 'elementor/finder/categories', [ $this, 'add_finder_items' ] );
+		add_filter( 'elementor_pro/frontend/localize_settings', [ $this, 'localize_settings' ] );
+	}
+
+	public function register_frontend_styles() {
+		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		wp_register_style(
+			'e-popup',
+			ELEMENTOR_PRO_URL . 'assets/css/conditionals/popup' . $suffix . '.css',
+			[],
+			ELEMENTOR_PRO_VERSION
+		);
+	}
+
+	public function redirect_legacy_popups_promotion_url(): void {
+		$page = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( static::PROMOTION_MENU_SLUG !== $page ) {
+			return;
+		}
+
+		if ( $this->can_use_popups() ) {
+			wp_safe_redirect( $this->get_admin_url() );
+			exit;
+		}
+
+		global $pagenow;
+
+		if ( $this->is_editor_one_active() ) {
+			if ( 'edit.php' !== $pagenow ) {
+				return;
+			}
+
+			if ( Source_Local::CPT !== filter_input( INPUT_GET, 'post_type', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ) {
+				return;
+			}
+
+			wp_safe_redirect( admin_url( 'admin.php?page=' . static::PROMOTION_MENU_SLUG ) );
+			exit;
+		}
+	}
+
+	public function enqueue_preview_styles() {
+		wp_enqueue_style( 'e-popup' );
+	}
+
+	public function disable_editing() {
+		$post_id = Utils::_unstable_get_super_global_value( $_GET, 'post' );
+
+		if ( ! $post_id ) {
+			return;
+		}
+
+		$document = Plugin::elementor()->documents->get( $post_id );
+
+		if ( ! $document ) {
+			return;
+		}
+
+		$template_type = $document->get_main_meta( DocumentBase::TYPE_META_KEY );
+
+		if ( static::DOCUMENT_TYPE === $template_type ) {
+			$error = new \WP_Error( 'e_popups_editing_disabled', esc_html__( 'Invalid post type.', 'elementor-pro' ) );
+			wp_die( $error ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+	}
+
+	public function maybe_redirect_to_promotion_page() {
+		if ( $this->is_on_popups_admin_page() ) {
+			wp_redirect( $this->get_promotion_url() );
+			exit();
+		}
+	}
+
+	private function is_on_popups_admin_page() {
+		global $pagenow;
+
+		return isset( $pagenow ) &&
+			'edit.php' === $pagenow &&
+			Source_Local::CPT === Utils::_unstable_get_super_global_value( $_GET, 'post_type' ) &&
+			static::DOCUMENT_TYPE === Utils::_unstable_get_super_global_value( $_GET, Source_Local::TAXONOMY_TYPE_SLUG );
+	}
+
+	private function get_promotion_url() {
+		return add_query_arg(
+			[
+				'page' => static::PROMOTION_MENU_SLUG,
+			],
+			Source_Local::ADMIN_MENU_SLUG
+		);
 	}
 
 	public function get_name() {
@@ -105,15 +224,6 @@ class Module extends Module_Base {
 
 	public function register_ajax_actions( Ajax $ajax ) {
 		$ajax->register_ajax_action( 'pro_popup_save_display_settings', [ $this, 'save_display_settings' ] );
-	}
-
-	/**
-	 * @deprecated 3.1.0
-	 */
-	public function localize_settings() {
-		Plugin::elementor()->modules_manager->get_modules( 'dev-tools' )->deprecation->deprecated_function( __METHOD__, '3.1.0' );
-
-		return [];
 	}
 
 	/**
@@ -179,7 +289,7 @@ class Module extends Module_Base {
 		return $categories;
 	}
 
-	private function get_admin_url( $relative = false ) {
+	public function get_admin_url( $relative = false ) {
 		$base_url = Source_Local::ADMIN_MENU_SLUG;
 		if ( ! $relative ) {
 			$base_url = admin_url( $base_url );
@@ -195,7 +305,7 @@ class Module extends Module_Base {
 	}
 
 	private function can_use_popups() {
-		return ( API::is_license_active() || $this->has_popups() );
+		return ( API::is_license_active() && API::is_licence_has_feature( static::DOCUMENT_TYPE, API::BC_VALIDATION_CALLBACK ) ) || $this->has_popups();
 	}
 
 	private function has_popups() {
@@ -219,5 +329,24 @@ class Module extends Module_Base {
 		$this->has_popups = $existing_popups->post_count > 0;
 
 		return $this->has_popups;
+	}
+
+	public function localize_settings( array $settings ): array {
+		$settings['popup']['hasPopUps'] = $this->has_popups();
+
+		return $settings;
+	}
+
+	protected function get_assets_base_url() {
+		return ELEMENTOR_PRO_URL;
+	}
+
+	public function register_styles() {
+		wp_register_style(
+			'e-popup',
+			$this->get_css_assets_url( 'popup', 'assets/css/conditionals/', true ),
+			[ 'elementor-frontend' ],
+			ELEMENTOR_PRO_VERSION
+		);
 	}
 }

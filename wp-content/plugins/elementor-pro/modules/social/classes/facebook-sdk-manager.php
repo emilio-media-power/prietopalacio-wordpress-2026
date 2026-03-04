@@ -17,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Facebook_SDK_Manager {
 
 	const OPTION_NAME_APP_ID = 'elementor_pro_facebook_app_id';
+	const FACEBOOK_PLUGINS_FAQ_URL = 'https://developers.facebook.com/docs/plugins/faqs?__cft__[0]=AZWTalTI1B5jfnDA1jij6GA2PisutktOCj7s5QwreTg5em5ewsd2SG3kRoKU88Q8v_2xyZHRsZs9mYrtQT1qBH05IIvy1T5a4SwAkTrZ7ZjuKqqahQEdc3dP-VZPvPApR-KDDeJmV2Auvjw_MKpySqgq&__tn__=R]-R#faq_1585575021764180';
 
 	public static function get_app_id() {
 		return get_option( self::OPTION_NAME_APP_ID, '' );
@@ -38,44 +39,44 @@ class Facebook_SDK_Manager {
 	 */
 	public static function add_app_id_control( $widget ) {
 		if ( ! self::get_app_id() ) {
-			$html = sprintf(
+			$content = sprintf(
 				/* translators: 1: Setting Page Link opening tag, 2: Link closing tag. */
 				esc_html__( 'Set your Facebook App ID in the %1$sIntegrations Settings%2$s', 'elementor-pro' ),
-				sprintf( '<a href="%s" target="_blank">', Settings::get_url() . '#tab-integrations' ),
+				sprintf( '<a href="%s" target="_blank">', Settings::get_settings_tab_url( 'integrations' ) ),
 				'</a>'
 			);
-			$content_classes = 'elementor-panel-alert elementor-panel-alert-warning';
+			$alert_type = 'warning';
 		} else {
-			$html = sprintf(
+			$content = sprintf(
 				/* translators: 1: App ID, 2: Setting Page Link opening tag, 3: Link closing tag. */
 				esc_html__( 'You are connected to Facebook App %1$s, %2$sChange App%3$s', 'elementor-pro' ),
 				self::get_app_id(),
-				sprintf( '<a href="%s" target="_blank">', Settings::get_url() . '#tab-integrations' ),
+				sprintf( '<a href="%s" target="_blank">', Settings::get_settings_tab_url( 'integrations' ) ),
 				'</a>'
 			);
-			$content_classes = 'elementor-panel-alert elementor-panel-alert-info';
+			$alert_type = 'info';
 		}
 
 		$widget->add_control(
 			'app_id',
 			[
-				'type' => Controls_Manager::RAW_HTML,
-				'raw' => $html,
-				'content_classes' => $content_classes,
+				'type' => Controls_Manager::ALERT,
+				'alert_type' => $alert_type,
+				'content' => $content,
 			]
 		);
 
 		$widget->add_control(
 			'app_eu_message',
 			[
-				'type' => Controls_Manager::RAW_HTML,
-				'raw' => sprintf(
+				'type' => Controls_Manager::ALERT,
+				'alert_type' => 'info',
+				'content' => sprintf(
 					/* translators: 1: Link opening tag, 2: Link closing tag. */
 					esc_html__( 'For visitors from the EU, Facebook widgets will only work for site visitors if they have logged into Facebook and consented to cookies. %1$sLearn more%2$s', 'elementor-pro' ),
 					sprintf( '<a href="%s" target="_blank">', 'https://developers.facebook.com/docs/plugins/' ),
 					'</a>'
 				),
-				'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
 			]
 		);
 	}

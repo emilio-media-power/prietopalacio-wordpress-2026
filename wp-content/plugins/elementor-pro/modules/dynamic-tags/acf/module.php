@@ -2,10 +2,8 @@
 namespace ElementorPro\Modules\DynamicTags\ACF;
 
 use Elementor\Controls_Manager;
-use Elementor\Core\Base\Document;
 use Elementor\Core\DynamicTags\Base_Tag;
 use Elementor\Modules\DynamicTags;
-use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -15,13 +13,98 @@ class Module extends DynamicTags\Module {
 
 	const ACF_GROUP = 'acf';
 
-	// TODO: Remove when Core 3.10.0 is released.
-	const DATETIME_CATEGORY = 'datetime';
-
 	/**
 	 * @var Dynamic_Value_Provider
 	 */
 	private static $dynamic_value_provider;
+
+	/**
+	 * Extract the ACF field selector from a control option value.
+	 *
+	 * For option values in the form 'options:FIELD_NAME', returns 'FIELD_NAME'.
+	 * For option values in the form 'FIELD_KEY:FIELD_NAME', returns 'FIELD_KEY'.
+	 *
+	 * @param string $option_value
+	 * @return string
+	 */
+	private static function extract_field_selector_from_option( $option_value ) {
+		$option_value = (string) $option_value;
+		$parts = explode( ':', $option_value, 2 );
+
+		if ( isset( $parts[0] ) && 'options' === $parts[0] ) {
+			return $parts[1] ?? $option_value;
+		}
+
+		return $parts[0] ?? $option_value;
+	}
+
+	public function __construct() {
+		parent::__construct();
+
+		add_filter( 'acf/pre_load_post_id', [ $this, 'filter_post_in_preview' ], 10, 2 );
+
+		add_filter( 'elementor/atomic/dynamic_tags/select_control_options', [ $this, 'filter_atomic_select_options_for_acf_url' ], 10, 3 );
+	}
+
+	/**
+	 * ACF meta values are not copying to post revisions. This fix is for replacing revision post_id to actual one
+	 *
+	 * @param $null
+	 * @param $post_id
+	 * @return mixed
+	 */
+	public function filter_post_in_preview( $null, $post_id ) {
+		if ( ! $post_id || ! is_preview() ) {
+			return $null;
+		}
+
+		if ( $post_id instanceof \WP_Post ) {
+			return $post_id->ID;
+		}
+
+		if ( $post_id instanceof \WP_Term ) {
+			return $post_id->term_id;
+		}
+
+		return $post_id;
+	}
+
+	/**
+	 * Filter v4 Atomic editor select options for ACF URL tag to only include ACF 'url' type fields.
+	 * Does not affect legacy editor or rendering.
+	 *
+	 * @param array $options key => label
+	 * @param array $control Original control config
+	 * @param array $tag Dynamic tag config
+	 * @return array Filtered options
+	 */
+	public function filter_atomic_select_options_for_acf_url( $options, $control, $tag ) {
+		if ( empty( $tag['name'] ) || 'acf-url' !== $tag['name'] ) {
+			return $options;
+		}
+
+		if ( empty( $control['name'] ) || 'key' !== $control['name'] ) {
+			return $options;
+		}
+
+		if ( ! function_exists( 'acf_get_field' ) ) {
+			return $options;
+		}
+
+		$filtered = [];
+
+		foreach ( $options as $value => $label ) {
+			$field_selector = static::extract_field_selector_from_option( $value );
+
+			$field = acf_get_field( $field_selector );
+
+			if ( is_array( $field ) && isset( $field['type'] ) && 'url' === $field['type'] ) {
+				$filtered[ $value ] = $label;
+			}
+		}
+
+		return empty( $filtered ) ? $options : $filtered;
+	}
 
 	/**
 	 * @param array $types

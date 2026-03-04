@@ -5,7 +5,9 @@ use Elementor\Controls_Manager;
 use Elementor\Core\Kits\Documents\Tabs\Global_Colors;
 use Elementor\Core\Kits\Documents\Tabs\Global_Typography;
 use Elementor\Group_Control_Border;
+use Elementor\Group_Control_Box_Shadow;
 use Elementor\Group_Control_Typography;
+use Elementor\Group_Control_Text_Shadow;
 use Elementor\Group_Control_Text_Stroke;
 use Elementor\Utils;
 use ElementorPro\Base\Base_Widget;
@@ -31,6 +33,28 @@ class Countdown extends Base_Widget {
 
 	public function get_keywords() {
 		return [ 'countdown', 'number', 'timer', 'time', 'date', 'evergreen' ];
+	}
+
+	protected function is_dynamic_content(): bool {
+		return false;
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-countdown' ];
 	}
 
 	protected function register_controls() {
@@ -100,20 +124,6 @@ class Countdown extends Base_Widget {
 				'dynamic' => [
 					'active' => true,
 				],
-			]
-		);
-
-		$this->add_control(
-			'label_display',
-			[
-				'label' => esc_html__( 'View', 'elementor-pro' ),
-				'type' => Controls_Manager::SELECT,
-				'options' => [
-					'block' => esc_html__( 'Block', 'elementor-pro' ),
-					'inline' => esc_html__( 'Inline', 'elementor-pro' ),
-				],
-				'default' => 'block',
-				'prefix_class' => 'elementor-countdown--label-',
 			]
 		);
 
@@ -199,6 +209,9 @@ class Countdown extends Base_Widget {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -216,6 +229,9 @@ class Countdown extends Base_Widget {
 				],
 				'dynamic' => [
 					'active' => true,
+				],
+				'ai' => [
+					'active' => false,
 				],
 			]
 		);
@@ -235,6 +251,9 @@ class Countdown extends Base_Widget {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -252,6 +271,9 @@ class Countdown extends Base_Widget {
 				],
 				'dynamic' => [
 					'active' => true,
+				],
+				'ai' => [
+					'active' => false,
 				],
 			]
 		);
@@ -307,10 +329,38 @@ class Countdown extends Base_Widget {
 		$this->end_controls_section();
 
 		$this->start_controls_section(
-			'section_box_style',
+			'section_countdown_style',
 			[
-				'label' => esc_html__( 'Boxes', 'elementor-pro' ),
+				'label' => esc_html__( 'Countdown', 'elementor-pro' ),
 				'tab' => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'heading_container',
+			[
+				'label' => esc_html__( 'Container', 'elementor-pro' ),
+				'type' => Controls_Manager::HEADING,
+			]
+		);
+
+		$this->add_control(
+			'label_display',
+			[
+				'label' => esc_html__( 'Layout', 'elementor-pro' ),
+				'type' => Controls_Manager::CHOOSE,
+				'options' => [
+					'block' => [
+						'title' => esc_html__( 'Block', 'elementor-pro' ),
+						'icon' => 'eicon-grow',
+					],
+					'inline' => [
+						'title' => esc_html__( 'Inline', 'elementor-pro' ),
+						'icon' => 'eicon-shrink',
+					],
+				],
+				'default' => 'block',
+				'prefix_class' => 'elementor-countdown--label-',
 			]
 		);
 
@@ -332,16 +382,99 @@ class Countdown extends Base_Widget {
 				],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 2000,
 					],
-					'%' => [
-						'min' => 0,
-						'max' => 100,
+					'em' => [
+						'max' => 200,
+					],
+					'rem' => [
+						'max' => 200,
 					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-countdown-wrapper' => 'max-width: {{SIZE}}{{UNIT}};',
+				],
+				'condition' => [
+					'label_display' => 'block',
+				],
+			]
+		);
+
+		$this->add_control(
+			'boxes_alignment',
+			[
+				'label' => esc_html__( 'Alignment', 'elementor-pro' ),
+				'type' => Controls_Manager::CHOOSE,
+				'options' => [
+					'start' => [
+						'title' => esc_html__( 'Start', 'elementor-pro' ),
+						'icon' => 'eicon-text-align-left',
+					],
+					'center' => [
+						'title' => esc_html__( 'Center', 'elementor-pro' ),
+						'icon' => 'eicon-text-align-center',
+					],
+					'end' => [
+						'title' => esc_html__( 'End', 'elementor-pro' ),
+						'icon' => 'eicon-text-align-right',
+					],
+				],
+				'classes' => 'elementor-control-start-end',
+				'selectors' => [
+					'{{WRAPPER}} .elementor-countdown-wrapper' => 'text-align: {{VALUE}};',
+				],
+				'condition' => [
+					'label_display' => 'inline',
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'box_spacing',
+			[
+				'label' => esc_html__( 'Space Between', 'elementor-pro' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
+				'default' => [
+					'size' => 10,
+				],
+				'range' => [
+					'px' => [
+						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
+					],
+				],
+				'selectors' => [
+					'body:not(.rtl) {{WRAPPER}} .elementor-countdown-item:not(:first-of-type)' => 'margin-left: calc( {{SIZE}}{{UNIT}}/2 );',
+					'body:not(.rtl) {{WRAPPER}} .elementor-countdown-item:not(:last-of-type)' => 'margin-right: calc( {{SIZE}}{{UNIT}}/2 );',
+					'body.rtl {{WRAPPER}} .elementor-countdown-item:not(:first-of-type)' => 'margin-right: calc( {{SIZE}}{{UNIT}}/2 );',
+					'body.rtl {{WRAPPER}} .elementor-countdown-item:not(:last-of-type)' => 'margin-left: calc( {{SIZE}}{{UNIT}}/2 );',
+				],
+			]
+		);
+
+		$this->add_control(
+			'heading_boxes',
+			[
+				'label' => esc_html__( 'Boxes', 'elementor-pro' ),
+				'type' => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+
+		$this->add_responsive_control(
+			'box_padding',
+			[
+				'label' => esc_html__( 'Padding', 'elementor-pro' ),
+				'type' => Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'selectors' => [
+					'{{WRAPPER}} .elementor-countdown-item' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
 				],
 			]
 		);
@@ -365,7 +498,6 @@ class Countdown extends Base_Widget {
 			[
 				'name' => 'box_border',
 				'selector' => '{{WRAPPER}} .elementor-countdown-item',
-				'separator' => 'before',
 			]
 		);
 
@@ -381,39 +513,11 @@ class Countdown extends Base_Widget {
 			]
 		);
 
-		$this->add_responsive_control(
-			'box_spacing',
+		$this->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
 			[
-				'label' => esc_html__( 'Space Between', 'elementor-pro' ),
-				'type' => Controls_Manager::SLIDER,
-				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
-				'default' => [
-					'size' => 10,
-				],
-				'range' => [
-					'px' => [
-						'min' => 0,
-						'max' => 100,
-					],
-				],
-				'selectors' => [
-					'body:not(.rtl) {{WRAPPER}} .elementor-countdown-item:not(:first-of-type)' => 'margin-left: calc( {{SIZE}}{{UNIT}}/2 );',
-					'body:not(.rtl) {{WRAPPER}} .elementor-countdown-item:not(:last-of-type)' => 'margin-right: calc( {{SIZE}}{{UNIT}}/2 );',
-					'body.rtl {{WRAPPER}} .elementor-countdown-item:not(:first-of-type)' => 'margin-right: calc( {{SIZE}}{{UNIT}}/2 );',
-					'body.rtl {{WRAPPER}} .elementor-countdown-item:not(:last-of-type)' => 'margin-left: calc( {{SIZE}}{{UNIT}}/2 );',
-				],
-			]
-		);
-
-		$this->add_responsive_control(
-			'box_padding',
-			[
-				'label' => esc_html__( 'Padding', 'elementor-pro' ),
-				'type' => Controls_Manager::DIMENSIONS,
-				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
-				'selectors' => [
-					'{{WRAPPER}} .elementor-countdown-item' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
-				],
+				'name' => 'box_shadow',
+				'selector' => '{{WRAPPER}} .elementor-countdown-item',
 			]
 		);
 
@@ -457,12 +561,23 @@ class Countdown extends Base_Widget {
 			]
 		);
 
+		$this->add_group_control(
+			Group_Control_Text_Shadow::get_type(),
+			[
+				'name' => 'digits_text_shadow',
+				'selector' => '{{WRAPPER}} .elementor-countdown-digits',
+			]
+		);
+
 		$this->add_control(
 			'heading_label',
 			[
 				'label' => esc_html__( 'Label', 'elementor-pro' ),
 				'type' => Controls_Manager::HEADING,
 				'separator' => 'before',
+				'condition' => [
+					'show_labels!' => '',
+				],
 			]
 		);
 
@@ -473,6 +588,9 @@ class Countdown extends Base_Widget {
 				'type' => Controls_Manager::COLOR,
 				'selectors' => [
 					'{{WRAPPER}} .elementor-countdown-label' => 'color: {{VALUE}};',
+				],
+				'condition' => [
+					'show_labels!' => '',
 				],
 			]
 		);
@@ -485,6 +603,20 @@ class Countdown extends Base_Widget {
 				'global' => [
 					'default' => Global_Typography::TYPOGRAPHY_SECONDARY,
 				],
+				'condition' => [
+					'show_labels!' => '',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Text_Shadow::get_type(),
+			[
+				'name' => 'label_text_shadow',
+				'selector' => '{{WRAPPER}} .elementor-countdown-label',
+				'condition' => [
+					'show_labels!' => '',
+				],
 			]
 		);
 
@@ -493,6 +625,9 @@ class Countdown extends Base_Widget {
 			[
 				'name' => 'text_stroke',
 				'selector' => '{{WRAPPER}} .elementor-countdown-label',
+				'condition' => [
+					'show_labels!' => '',
+				],
 			]
 		);
 
@@ -515,18 +650,23 @@ class Countdown extends Base_Widget {
 				'label' => esc_html__( 'Alignment', 'elementor-pro' ),
 				'type' => Controls_Manager::CHOOSE,
 				'options' => [
-					'left' => [
-						'title' => esc_html__( 'Left', 'elementor-pro' ),
+					'start' => [
+						'title' => esc_html__( 'Start', 'elementor-pro' ),
 						'icon' => 'eicon-text-align-left',
 					],
 					'center' => [
 						'title' => esc_html__( 'Center', 'elementor-pro' ),
 						'icon' => 'eicon-text-align-center',
 					],
-					'right' => [
-						'title' => esc_html__( 'Right', 'elementor-pro' ),
+					'end' => [
+						'title' => esc_html__( 'End', 'elementor-pro' ),
 						'icon' => 'eicon-text-align-right',
 					],
+				],
+				'classes' => 'elementor-control-start-end',
+				'selectors_dictionary' => [
+					'left' => is_rtl() ? 'end' : 'start',
+					'right' => is_rtl() ? 'start' : 'end',
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-countdown-expire--message' => 'text-align: {{VALUE}};',
@@ -556,6 +696,14 @@ class Countdown extends Base_Widget {
 				'global' => [
 					'default' => Global_Typography::TYPOGRAPHY_TEXT,
 				],
+				'selector' => '{{WRAPPER}} .elementor-countdown-expire--message',
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Text_Shadow::get_type(),
+			[
+				'name' => 'message_text_shadow',
 				'selector' => '{{WRAPPER}} .elementor-countdown-expire--message',
 			]
 		);
@@ -657,6 +805,35 @@ class Countdown extends Base_Widget {
 		return $actions;
 	}
 
+	private function is_valid_url( $url ) {
+		return ! preg_match( '/\bjavascript\b/i', $url ) && filter_var( $url, FILTER_VALIDATE_URL );
+	}
+
+	private function sanitize_action( $key, $value ) {
+		if ( 'redirect_url' === $key && is_string( $value ) ) {
+			return $this->is_valid_url( $value ) ? esc_url( $value ) : null;
+		}
+
+		return esc_html( $value );
+	}
+
+	private function map_sanitized_action( $action ) {
+		$sanitized_action = [];
+
+		foreach ( $action as $key => $value ) {
+			$sanitized_action[ $key ] = $this->sanitize_action( $key, $value );
+		}
+
+		return $sanitized_action;
+	}
+
+	private function sanitize_redirect_url( $actions ) {
+		return array_map( function ( $action ) {
+			return $this->map_sanitized_action( $action );
+		}, $actions );
+	}
+
+
 	protected function render() {
 		$instance = $this->get_settings_for_display();
 		$due_date = $instance['due_date'];
@@ -677,7 +854,9 @@ class Countdown extends Base_Widget {
 		}
 
 		if ( $actions ) {
-			$this->add_render_attribute( 'div', 'data-expire-actions', wp_json_encode( $actions ) );
+			$sanitized_actions = $this->sanitize_redirect_url( $actions );
+
+			$this->add_render_attribute( 'div', 'data-expire-actions', wp_json_encode( $sanitized_actions ) );
 		}
 
 		$this->add_render_attribute( 'div', [
@@ -696,8 +875,7 @@ class Countdown extends Base_Widget {
 					continue;
 				} ?>
 				<div class="elementor-countdown-expire--message">
-					<?php // PHPCS - the main text of a widget should not be escaped.
-					echo $instance['message_after_expire']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo esc_html( $instance['message_after_expire'] ); ?>
 				</div>
 				<?php
 			}

@@ -2,8 +2,10 @@
 namespace ElementorPro\Modules\AssetsManager;
 
 use ElementorPro\Base\Module_Base;
-use ElementorPro\Modules\AssetsManager\AssetTypes;
-use ElementorPro\Plugin;
+use ElementorPro\Modules\AssetsManager\AssetTypes\Fonts\ImportExport\Import_Export as Fonts_Import_Export;
+use ElementorPro\Modules\AssetsManager\AssetTypes\Fonts\ImportExportCustomization\Import_Export_Customization as Fonts_Import_Export_Customization;
+use ElementorPro\Modules\AssetsManager\AssetTypes\Icons\ImportExport\Import_Export as Icons_Import_Export;
+use ElementorPro\Modules\AssetsManager\AssetTypes\Icons\ImportExportCustomization\Import_Export_Customization as Icons_Import_Export_Customization;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -33,19 +35,19 @@ class Module extends Module_Base {
 		return $this->asset_managers;
 	}
 
-	/**
-	 * @deprecated 3.1.0
-	 */
-	public function localize_settings() {
-		Plugin::elementor()->modules_manager->get_modules( 'dev-tools' )->deprecation->deprecated_function( __METHOD__, '3.1.0' );
-
-		return [];
-	}
-
 	public function __construct() {
 		parent::__construct();
 
 		$this->add_asset_manager( 'font', new AssetTypes\Fonts_Manager() );
 		$this->add_asset_manager( 'icon', new AssetTypes\Icons_Manager() );
+
+		$this->register_import_export();
+	}
+
+	private function register_import_export() {
+		( new Fonts_Import_Export() )->register_hooks();
+		( new Fonts_Import_Export_Customization() )->register_hooks();
+		( new Icons_Import_Export() )->register_hooks();
+		( new Icons_Import_Export_Customization() )->register_hooks();
 	}
 }

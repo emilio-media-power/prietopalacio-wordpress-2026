@@ -8,6 +8,9 @@ use Elementor\Core\Kits\Documents\Tabs\Global_Typography;
 use Elementor\Group_Control_Css_Filter;
 use Elementor\Group_Control_Typography;
 use ElementorPro\Base\Base_Widget;
+use ElementorPro\Core\Isolation\Wordpress_Adapter;
+use ElementorPro\Modules\Lottie\Classes\Caption_Helper;
+use ElementorPro\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -37,12 +40,36 @@ class Lottie extends Base_Widget {
 		return [ 'lottie' ];
 	}
 
-	public function get_style_depends() {
-		return [ 'e-lottie' ];
-	}
-
 	public function get_icon() {
 		return 'eicon-lottie';
+	}
+
+	protected function is_dynamic_content(): bool {
+		return false;
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	public function get_style_depends(): array {
+		return [ 'widget-lottie', 'e-lottie' ];
+	}
+
+	protected function current_user_can_use_external_source() {
+		return current_user_can( 'publish_pages' );
+	}
+
+	protected function get_source_options() {
+		$options = [
+			'media_file' => esc_html__( 'Media File', 'elementor-pro' ),
+		];
+
+		if ( $this->current_user_can_use_external_source() ) {
+			$options['external_url'] = esc_html__( 'External URL', 'elementor-pro' );
+		}
+
+		return $options;
 	}
 
 	protected function register_controls() {
@@ -56,10 +83,7 @@ class Lottie extends Base_Widget {
 				'label' => esc_html__( 'Source', 'elementor-pro' ),
 				'type' => Controls_Manager::SELECT,
 				'default' => 'media_file',
-				'options' => [
-					'media_file' => esc_html__( 'Media File', 'elementor-pro' ),
-					'external_url' => esc_html__( 'External URL', 'elementor-pro' ),
-				],
+				'options' => $this->get_source_options(),
 				'frontend_available' => true,
 			]
 		);
@@ -68,7 +92,7 @@ class Lottie extends Base_Widget {
 			'source_external_url',
 			[
 				'label' => esc_html__( 'External URL', 'elementor-pro' ),
-				'type' => Controls_Manager::URL,
+				'type' => $this->current_user_can_use_external_source() ? Controls_Manager::URL : Controls_Manager::HIDDEN,
 				'condition' => [
 					'source' => 'external_url',
 				],
@@ -85,7 +109,7 @@ class Lottie extends Base_Widget {
 			[
 				'label' => esc_html__( 'Upload JSON File', 'elementor-pro' ),
 				'type' => Controls_Manager::MEDIA,
-				'media_type' => 'application/json',
+				'media_types' => [ 'application/json' ],
 				'frontend_available' => true,
 				'condition' => [
 					'source' => 'media_file',
@@ -388,6 +412,7 @@ class Lottie extends Base_Widget {
 					'animation' => esc_html__( 'Animation', 'elementor-pro' ),
 					'column' => esc_html__( 'Column', 'elementor-pro' ),
 					'section' => esc_html__( 'Section', 'elementor-pro' ),
+					'container' => esc_html__( 'Container', 'elementor-pro' ),
 				],
 				'frontend_available' => true,
 			]
@@ -428,7 +453,7 @@ class Lottie extends Base_Widget {
 				'frontend_available' => true,
 				'render_type' => 'none',
 				'default' => [
-					'size' => '0',
+					'size' => 0,
 					'unit' => '%',
 				],
 				'size_units' => [ '%' ],
@@ -443,7 +468,7 @@ class Lottie extends Base_Widget {
 				'frontend_available' => true,
 				'render_type' => 'none',
 				'default' => [
-					'size' => '100',
+					'size' => 100,
 					'unit' => '%',
 				],
 				'size_units' => [ '%' ],
@@ -538,6 +563,12 @@ class Lottie extends Base_Widget {
 						'min' => 1,
 						'max' => 1000,
 					],
+					'em' => [
+						'max' => 100,
+					],
+					'rem' => [
+						'max' => 100,
+					],
 					'vw' => [
 						'min' => 1,
 						'max' => 100,
@@ -573,6 +604,12 @@ class Lottie extends Base_Widget {
 						'min' => 1,
 						'max' => 1000,
 					],
+					'em' => [
+						'max' => 100,
+					],
+					'rem' => [
+						'max' => 100,
+					],
 					'vw' => [
 						'min' => 1,
 						'max' => 100,
@@ -581,14 +618,7 @@ class Lottie extends Base_Widget {
 				'selectors' => [
 					'{{WRAPPER}}' => '--lottie-container-max-width: {{SIZE}}{{UNIT}};',
 				],
-			]
-		);
-
-		$this->add_control(
-			'separator_panel_style',
-			[
-				'type' => Controls_Manager::DIVIDER,
-				'style' => 'thick',
+				'separator' => 'after',
 			]
 		);
 
@@ -664,10 +694,11 @@ class Lottie extends Base_Widget {
 			$this->add_control(
 				'background_hover_transition',
 				[
-					'label' => esc_html__( 'Transition Duration', 'elementor-pro' ),
+					'label' => esc_html__( 'Transition Duration', 'elementor-pro' ) . ' (s)',
 					'type' => Controls_Manager::SLIDER,
 					'range' => [
 						'px' => [
+							'min' => 0,
 							'max' => 3,
 							'step' => 0.1,
 						],
@@ -758,8 +789,13 @@ class Lottie extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -771,27 +807,13 @@ class Lottie extends Base_Widget {
 		$this->end_controls_section();
 	}
 
+	private function wp_adapter() {
+		return new Wordpress_Adapter();
+	}
+
 	private function get_caption( $settings ) {
-		$is_media_file_caption = $this->is_media_file_caption( $settings );
-		$is_external_url_caption = $this->is_external_url_caption( $settings );
-
-		if ( ( $is_media_file_caption && 'custom' === $settings['caption_source'] ) || $is_external_url_caption ) {
-			return $settings['caption'];
-		} else if ( 'caption' === $settings['caption_source'] ) {
-			return wp_get_attachment_caption( $settings['source_json']['id'] );
-		} else if ( 'title' === $settings['caption_source'] ) {
-			return get_the_title( $settings['source_json']['id'] );
-		}
-
-		return '';
-	}
-
-	private function is_media_file_caption( $settings ) {
-		return 'media_file' === $settings['source'] && 'none' !== $settings['caption_source'];
-	}
-
-	private function is_external_url_caption( $settings ) {
-		return 'external_url' === $settings['source'] && '' !== $settings['caption'];
+		return ( new Caption_Helper( $this->wp_adapter(), $settings ) )
+			->get_caption();
 	}
 
 	protected function render() {
@@ -852,8 +874,8 @@ class Lottie extends Base_Widget {
 		var widget_caption = getCaption() ? '<p class="e-lottie__caption">' + getCaption() + '</p>' : '';
 		var widget_container = '<div class="e-lottie__container"><div class="e-lottie__animation"></div>' + widget_caption + '</div>';
 
-		if ( settings.custom_link.url && 'custom' === settings.link_to ) {
-			widget_container = '<a class="e-lottie__container__link" href="' + settings.custom_link.url + '">' + widget_container + '</a>';
+		if ( settings.custom_link?.url && 'custom' === settings.link_to ) {
+			widget_container = '<a class="e-lottie__container__link" href="' + elementor.helpers.sanitizeUrl( settings.custom_link?.url ) + '">' + widget_container + '</a>';
 		}
 
 		print( widget_container );

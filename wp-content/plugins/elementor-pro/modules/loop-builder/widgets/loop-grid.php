@@ -7,14 +7,17 @@ use Elementor\Core\Base\Document;
 use ElementorPro\Modules\QueryControl\Controls\Template_Query;
 use ElementorPro\Modules\QueryControl\Module as QueryControlModule;
 use ElementorPro\Modules\LoopBuilder\Documents\Loop as LoopDocument;
-use ElementorPro\Plugin;
+use ElementorPro\Modules\LoopBuilder\Module as LoopBuilderModule;
+use ElementorPro\Modules\Woocommerce\Module as WoocommerceModule;
+use Elementor\Group_Control_Typography;
+use Elementor\Group_Control_Text_Shadow;
+use Elementor\Group_Control_Text_Stroke;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
 class Loop_Grid extends Base {
-
 	public function get_name() {
 		return 'loop-grid';
 	}
@@ -29,6 +32,24 @@ class Loop_Grid extends Base {
 
 	public function get_icon() {
 		return 'eicon-loop-builder';
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-loop-grid' ];
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return true;
 	}
 
 	protected function register_layout_section() {
@@ -119,6 +140,10 @@ class Loop_Grid extends Base {
 				'condition' => [
 					'posts_per_page!' => 1,
 					'template_id!' => '',
+					'_skin!' => [
+						LoopBuilderModule::LOOP_POST_TAXONOMY_SKIN_ID,
+						WoocommerceModule::LOOP_PRODUCT_TAXONOMY_SKIN_ID,
+					],
 				],
 				'render_type' => 'template',
 				'frontend_available' => true,
@@ -209,18 +234,18 @@ class Loop_Grid extends Base {
 				'type' => Controls_Manager::SELECT,
 				'default' => '1',
 				'options' => [
-					'1' => '1',
-					'2' => '2',
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
-					'6' => '6',
-					'7' => '7',
-					'8' => '8',
-					'9' => '9',
-					'10' => '10',
-					'11' => '11',
-					'12' => '12',
+					'1' => esc_html__( '1', 'elementor-pro' ),
+					'2' => esc_html__( '2', 'elementor-pro' ),
+					'3' => esc_html__( '3', 'elementor-pro' ),
+					'4' => esc_html__( '4', 'elementor-pro' ),
+					'5' => esc_html__( '5', 'elementor-pro' ),
+					'6' => esc_html__( '6', 'elementor-pro' ),
+					'7' => esc_html__( '7', 'elementor-pro' ),
+					'8' => esc_html__( '8', 'elementor-pro' ),
+					'9' => esc_html__( '9', 'elementor-pro' ),
+					'10' => esc_html__( '10', 'elementor-pro' ),
+					'11' => esc_html__( '11', 'elementor-pro' ),
+					'12' => esc_html__( '12', 'elementor-pro' ),
 				],
 				'condition' => [
 					'template_id!' => '',
@@ -237,17 +262,47 @@ class Loop_Grid extends Base {
 				'type' => Controls_Manager::RAW_HTML,
 				'raw' => esc_html__( 'Note: Item will span across a number of columns.', 'elementor-pro' ),
 				'content_classes' => 'elementor-descriptor',
+				'condition' => [
+					'template_id!' => '',
+				],
 			]
 		);
 
 		$repeater->add_control(
 			'column_span_masonry_note',
 			[
-				'type' => Controls_Manager::RAW_HTML,
-				'raw' => esc_html__( 'Note: The Masonry option combined with Column Span might cause unexpected results and break the layout.', 'elementor-pro' ),
-				'content_classes' => 'elementor-panel-alert elementor-panel-alert-warning',
+				'type' => Controls_Manager::ALERT,
+				'alert_type' => 'warning',
+				'content' => esc_html__( 'Note: The Masonry option combined with Column Span might cause unexpected results and break the layout.', 'elementor-pro' ),
 				'condition' => [
 					'column_span!' => '1',
+				],
+			]
+		);
+
+		$repeater->add_control(
+			'static_position',
+			[
+				'label' => esc_html__( 'Static item position', 'elementor-pro' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_off' => esc_html__( 'Off', 'elementor-pro' ),
+				'label_on' => esc_html__( 'On', 'elementor-pro' ),
+				'condition' => [
+					'template_id!' => '',
+				],
+				'render_type' => 'template',
+			]
+		);
+
+		$repeater->add_control(
+			'static_position_note',
+			[
+				'type' => Controls_Manager::RAW_HTML,
+				'raw' => esc_html__( 'Note: Static Items remain in place when new items are added to grid. Other items appear according to query settings.', 'elementor-pro' ),
+				'content_classes' => 'elementor-descriptor',
+				'condition' => [
+					'static_position!' => '',
+					'template_id!' => '',
 				],
 			]
 		);
@@ -261,6 +316,8 @@ class Loop_Grid extends Base {
 				'title_field' => 'Alternate Template',
 				'condition' => [
 					'alternate_template' => 'yes',
+					'posts_per_page!' => 1,
+					'template_id!' => '',
 				],
 				'default' => [
 					[
@@ -285,6 +342,100 @@ class Loop_Grid extends Base {
 		$this->end_injection();
 	}
 
+	protected function register_additional_options_section_controls() {
+		$this->start_controls_section(
+			'section_additional_options',
+			[
+				'label' => esc_html__( 'Additional Options', 'elementor-pro' ),
+				'tab' => Controls_Manager::TAB_CONTENT,
+				'condition' => [
+					'template_id!' => '',
+				],
+			]
+		);
+
+		$this->add_control(
+			'enable_nothing_found_message',
+			[
+				'label' => esc_html__( 'Nothing Found Message', 'elementor-pro' ),
+				'description' => esc_html__( 'Note: This message will appear when no content is loaded in the grid.', 'elementor-pro' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_off' => esc_html__( 'Off', 'elementor-pro' ),
+				'label_on' => esc_html__( 'On', 'elementor-pro' ),
+			]
+		);
+
+		$this->add_control(
+			'nothing_found_message_text',
+			[
+				'type' => Controls_Manager::TEXTAREA,
+				'ai' => [
+					'type' => 'text',
+				],
+				'dynamic' => [
+					'active' => true,
+				],
+				'condition' => [
+					'enable_nothing_found_message' => 'yes',
+				],
+				'default' => esc_html__( 'It seems we can’t find what you’re looking for.', 'elementor-pro' ),
+			]
+		);
+
+		$this->add_responsive_control(
+			'nothing_found_message_align',
+			[
+				'label' => esc_html__( 'Alignment', 'elementor-pro' ),
+				'type' => Controls_Manager::CHOOSE,
+				'options' => [
+					'start' => [
+						'title' => esc_html__( 'Start', 'elementor-pro' ),
+						'icon' => 'eicon-text-align-left',
+					],
+					'center' => [
+						'title' => esc_html__( 'Center', 'elementor-pro' ),
+						'icon' => 'eicon-text-align-center',
+					],
+					'end' => [
+						'title' => esc_html__( 'End', 'elementor-pro' ),
+						'icon' => 'eicon-text-align-right',
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}}' => '--e-loop-nothing-found-message-align: {{VALUE}};',
+				],
+				'condition' => [
+					'enable_nothing_found_message' => 'yes',
+				],
+				'render_type' => 'ui',
+			]
+		);
+
+		$this->add_control(
+			'nothing_found_message_html_tag',
+			[
+				'label' => esc_html__( 'HTML Tag', 'elementor-pro' ),
+				'type' => Controls_Manager::SELECT,
+				'options' => [
+					'h1' => 'H1',
+					'h2' => 'H2',
+					'h3' => 'H3',
+					'h4' => 'H4',
+					'h5' => 'H5',
+					'h6' => 'H6',
+					'div' => 'div',
+					'span' => 'span',
+				],
+				'default' => 'div',
+				'condition' => [
+					'enable_nothing_found_message' => 'yes',
+				],
+			]
+		);
+
+		$this->end_controls_section();
+	}
+
 	protected function register_design_layout_controls() {
 		$this->start_controls_section(
 			'section_design_layout',
@@ -302,8 +453,13 @@ class Loop_Grid extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -320,8 +476,13 @@ class Loop_Grid extends Base {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'frontend_available' => true,
@@ -332,5 +493,111 @@ class Loop_Grid extends Base {
 		);
 
 		$this->end_controls_section();
+	}
+
+	protected function register_design_nothing_found_message_controls() {
+		$this->start_controls_section(
+			'section_nothing_found_message_design',
+			[
+				'label' => esc_html__( 'Nothing Found Message', 'elementor-pro' ),
+				'tab' => Controls_Manager::TAB_STYLE,
+				'condition' => [
+					'template_id!' => '',
+					'enable_nothing_found_message' => 'yes',
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'nothing_found_message_space_from_top',
+			[
+				'label' => esc_html__( 'Space from top', 'elementor-pro' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'max' => 200,
+					],
+					'em' => [
+						'max' => 20,
+					],
+					'rem' => [
+						'max' => 20,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}}' => '--e-loop-nothing-found-message-space-from-top: {{SIZE}}{{UNIT}}',
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'nothing_found_message_space_from_bottom',
+			[
+				'label' => esc_html__( 'Space from bottom', 'elementor-pro' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
+				'range' => [
+					'px' => [
+						'max' => 200,
+					],
+					'em' => [
+						'max' => 20,
+					],
+					'rem' => [
+						'max' => 20,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}}' => '--e-loop-nothing-found-message-space-from-bottom: {{SIZE}}{{UNIT}}',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Typography::get_type(),
+			[
+				'name' => 'nothing_found_message_typography',
+				'selector' => '{{WRAPPER}} .e-loop-nothing-found-message__text',
+				'separator' => 'before',
+			]
+		);
+
+		$this->add_control(
+			'nothing_found_message_color',
+			[
+				'label' => esc_html__( 'Color', 'elementor-pro' ),
+				'type' => Controls_Manager::COLOR,
+				'selectors' => [
+					'{{WRAPPER}}' => '--e-loop-nothing-found-message-color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Text_Shadow::get_type(),
+			[
+				'name' => 'nothing_found_message_text_shadow',
+				'selector' => '{{WRAPPER}} .e-loop-nothing-found-message__text',
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Text_Stroke::get_type(),
+			[
+				'name' => 'nothing_found_message_text_stroke',
+				'selector' => '{{WRAPPER}} .e-loop-nothing-found-message__text',
+			]
+		);
+
+		$this->end_controls_section();
+	}
+
+	public static function on_import_update_dynamic_content( array $element_config, array $data, $controls = null ) : array {
+		if ( isset( $element_config['settings']['template_id'] ) && isset( $data['post_ids'] ) ) {
+			$element_config['settings']['template_id'] = $data['post_ids'][ $element_config['settings']['template_id'] ];
+		}
+
+		return $element_config;
 	}
 }

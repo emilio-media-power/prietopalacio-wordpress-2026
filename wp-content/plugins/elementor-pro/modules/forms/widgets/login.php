@@ -32,7 +32,28 @@ class Login extends Base_Widget {
 		return [ 'login', 'user', 'form' ];
 	}
 
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-login', 'widget-form' ];
+	}
+
 	protected function register_controls() {
+		$optimized_markup = Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+		$widget_container_selector = $optimized_markup ? '' : ' .elementor-widget-container';
+
 		$this->start_controls_section(
 			'section_fields_content',
 			[
@@ -83,6 +104,9 @@ class Login extends Base_Widget {
 				'type' => Controls_Manager::TEXT,
 				'dynamic' => [
 					'active' => true,
+				],
+				'ai' => [
+					'active' => false,
 				],
 				'default' => esc_html__( 'Log In', 'elementor-pro' ),
 			]
@@ -158,8 +182,6 @@ class Login extends Base_Widget {
 				'type' => Controls_Manager::URL,
 				'show_label' => false,
 				'options' => false,
-				'separator' => false,
-				'placeholder' => esc_html__( 'https://your-link.com', 'elementor-pro' ),
 				'description' => esc_html__( 'Note: Because of security reasons, you can ONLY use your current domain here.', 'elementor-pro' ),
 				'dynamic' => [
 					'active' => true,
@@ -187,8 +209,6 @@ class Login extends Base_Widget {
 				'type' => Controls_Manager::URL,
 				'show_label' => false,
 				'options' => false,
-				'separator' => false,
-				'placeholder' => esc_html__( 'https://your-link.com', 'elementor-pro' ),
 				'description' => esc_html__( 'Note: Because of security reasons, you can ONLY use your current domain here.', 'elementor-pro' ),
 				'dynamic' => [
 					'active' => true,
@@ -261,6 +281,9 @@ class Login extends Base_Widget {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 				'default' => esc_html__( 'Username or Email Address', 'elementor-pro' ),
 				'conditions' => [
 					'relation' => 'or',
@@ -292,6 +315,9 @@ class Login extends Base_Widget {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -302,6 +328,9 @@ class Login extends Base_Widget {
 				'type' => Controls_Manager::TEXT,
 				'dynamic' => [
 					'active' => true,
+				],
+				'ai' => [
+					'active' => false,
 				],
 				'default' => esc_html__( 'Password', 'elementor-pro' ),
 				'conditions' => [
@@ -334,6 +363,9 @@ class Login extends Base_Widget {
 				'dynamic' => [
 					'active' => true,
 				],
+				'ai' => [
+					'active' => false,
+				],
 			]
 		);
 
@@ -354,12 +386,17 @@ class Login extends Base_Widget {
 				'type' => Controls_Manager::SLIDER,
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'default' => [
-					'size' => '10',
+					'size' => 10,
 				],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 60,
+					],
+					'em' => [
+						'max' => 6,
+					],
+					'rem' => [
+						'max' => 6,
 					],
 				],
 				'selectors' => [
@@ -417,12 +454,17 @@ class Login extends Base_Widget {
 				'type' => Controls_Manager::SLIDER,
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'default' => [
-					'size' => '0',
+					'size' => 0,
 				],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 60,
+					],
+					'em' => [
+						'max' => 6,
+					],
+					'rem' => [
+						'max' => 6,
 					],
 				],
 				'selectors' => [
@@ -698,6 +740,21 @@ class Login extends Base_Widget {
 			]
 		);
 
+		$this->add_control(
+			'button_hover_transition_duration',
+			[
+				'label' => esc_html__( 'Transition Duration', 'elementor-pro' ),
+				'type' => Controls_Manager::SLIDER,
+				'size_units' => [ 's', 'ms', 'custom' ],
+				'default' => [
+					'unit' => 'ms',
+				],
+				'selectors' => [
+					'{{WRAPPER}} .elementor-button' => 'transition-duration: {{SIZE}}{{UNIT}}',
+				],
+			]
+		);
+
 		$this->end_controls_tab();
 
 		$this->end_controls_tabs();
@@ -709,6 +766,9 @@ class Login extends Base_Widget {
 			[
 				'label' => esc_html__( 'Logged in Message', 'elementor-pro' ),
 				'tab' => Controls_Manager::TAB_STYLE,
+				'condition' => [
+					'show_logged_in_message' => 'yes',
+				],
 			]
 		);
 
@@ -718,10 +778,13 @@ class Login extends Base_Widget {
 				'label' => esc_html__( 'Text Color', 'elementor-pro' ),
 				'type' => Controls_Manager::COLOR,
 				'selectors' => [
-					'{{WRAPPER}} .elementor-widget-container .elementor-login__logged-in-message' => 'color: {{VALUE}};',
+					"{{WRAPPER}}{$widget_container_selector} .elementor-login__logged-in-message" => 'color: {{VALUE}};',
 				],
 				'global' => [
 					'default' => Global_Colors::COLOR_TEXT,
+				],
+				'condition' => [
+					'show_logged_in_message' => 'yes',
 				],
 			]
 		);
@@ -730,9 +793,12 @@ class Login extends Base_Widget {
 			Group_Control_Typography::get_type(),
 			[
 				'name' => 'message_typography',
-				'selector' => '{{WRAPPER}} .elementor-widget-container .elementor-login__logged-in-message',
+				'selector' => "{{WRAPPER}}{$widget_container_selector} .elementor-login__logged-in-message",
 				'global' => [
 					'default' => Global_Typography::TYPOGRAPHY_TEXT,
+				],
+				'condition' => [
+					'show_logged_in_message' => 'yes',
 				],
 			]
 		);
@@ -775,7 +841,6 @@ class Login extends Base_Widget {
 						'elementor-col-100',
 					],
 				],
-
 				'button' => [
 					'class' => [
 						'elementor-button',
@@ -783,12 +848,14 @@ class Login extends Base_Widget {
 					'name' => 'wp-submit',
 				],
 				'user_label' => [
-					'for' => 'user',
+					'for' => 'user-' . $this->get_id(),
+					'class' => 'elementor-field-label',
 				],
 				'user_input' => [
+					'size' => '1',
 					'type' => 'text',
 					'name' => 'log',
-					'id' => 'user',
+					'id' => 'user-' . $this->get_id(),
 					'placeholder' => $settings['user_placeholder'],
 					'class' => [
 						'elementor-field',
@@ -797,12 +864,14 @@ class Login extends Base_Widget {
 					],
 				],
 				'password_label' => [
-					'for' => 'password',
+					'for' => 'password-' . $this->get_id(),
+					'class' => 'elementor-field-label',
 				],
 				'password_input' => [
+					'size' => '1',
 					'type' => 'password',
 					'name' => 'pwd',
-					'id' => 'password',
+					'id' => 'password-' . $this->get_id(),
 					'placeholder' => $settings['password_placeholder'],
 					'class' => [
 						'elementor-field',
@@ -810,26 +879,16 @@ class Login extends Base_Widget {
 						'elementor-size-' . $settings['input_size'],
 					],
 				],
-				//TODO: add unique ID
-				'label_user' => [
-					'for' => 'user',
-					'class' => 'elementor-field-label',
-				],
-
-				'label_password' => [
-					'for' => 'password',
-					'class' => 'elementor-field-label',
-				],
 			]
 		);
 
 		if ( ! $settings['show_labels'] ) {
-			$this->add_render_attribute( 'label', 'class', 'elementor-screen-only' );
+			$this->add_render_attribute( 'user_label', 'class', 'elementor-screen-only' );
+			$this->add_render_attribute( 'password_label', 'class', 'elementor-screen-only' );
 		}
 
 		$this->add_render_attribute( 'field-group', 'class', 'elementor-field-required' )
-			 ->add_render_attribute( 'input', 'required', true )
-			 ->add_render_attribute( 'input', 'aria-required', 'true' );
+			 ->add_render_attribute( 'input', 'required', true );
 
 	}
 
@@ -869,35 +928,16 @@ class Login extends Base_Widget {
 
 		$this->form_fields_render_attributes();
 		?>
-		<form class="elementor-login elementor-form" method="post" action="<?php echo esc_url( site_url( 'wp-login.php', 'login_post' ) ); ?>">
+		<form class="elementor-login elementor-form" method="post" action="<?php echo esc_url( site_url( 'wp-login.php', 'login_post' ) ); ?>" aria-label="<?php echo esc_attr__( 'Login form', 'elementor-pro' ); ?>">
 			<input type="hidden" name="redirect_to" value="<?php echo esc_attr( $redirect_url ); ?>">
 			<div <?php $this->print_render_attribute_string( 'wrapper' ); ?>>
 				<div <?php $this->print_render_attribute_string( 'field-group' ); ?>>
-					<?php
-
-					if ( $settings['show_labels'] ) {
-						echo '<label ';
-						$this->print_render_attribute_string( 'user_label' );
-						echo '>';
-
-						$this->print_unescaped_setting( 'user_label' );
-						echo '</label>';
-					}
-					?>
-					<input size="1" <?php $this->print_render_attribute_string( 'user_input' ); ?>>
+					<label <?php $this->print_render_attribute_string( 'user_label' ); ?>><?php echo wp_kses_post( $settings['user_label'] ); ?></label>
+					<input <?php $this->print_render_attribute_string( 'user_input' ); ?>>
 				</div>
 				<div <?php $this->print_render_attribute_string( 'field-group' ); ?>>
-					<?php
-					if ( $settings['show_labels'] ) :
-						echo '<label ';
-						$this->print_render_attribute_string( 'password_label' );
-						echo '>';
-
-						$this->print_unescaped_setting( 'password_label' );
-						echo '</label>';
-					endif;
-					?>
-					<input size="1" <?php $this->print_render_attribute_string( 'password_input' ); ?>>
+					<label <?php $this->print_render_attribute_string( 'password_label' ); ?>><?php echo wp_kses_post( $settings['password_label'] ); ?></label>
+					<input <?php $this->print_render_attribute_string( 'password_input' ); ?>>
 				</div>
 
 				<?php if ( 'yes' === $settings['show_remember_me'] ) : ?>
@@ -912,7 +952,7 @@ class Login extends Base_Widget {
 				<div <?php $this->print_render_attribute_string( 'submit-group' ); ?>>
 					<button type="submit" <?php $this->print_render_attribute_string( 'button' ); ?>>
 							<?php if ( ! empty( $settings['button_text'] ) ) : ?>
-								<span class="elementor-button-text"><?php $this->print_unescaped_setting( 'button_text' ); ?></span>
+								<span class="elementor-button-text"><?php echo wp_kses_post( $settings['button_text'] ); ?></span>
 							<?php endif; ?>
 					</button>
 				</div>
@@ -956,22 +996,71 @@ class Login extends Base_Widget {
 	 */
 	protected function content_template() {
 		?>
-		<div class="elementor-login elementor-form">
+		<div class="elementor-login elementor-form" aria-label="<?php echo esc_attr__( 'Login form', 'elementor-pro' ); ?>">
 			<div class="elementor-form-fields-wrapper">
 				<#
-					fieldGroupClasses = 'elementor-field-group elementor-column elementor-col-100 elementor-field-type-text';
+				view.addRenderAttribute( 'field-group', 'class', 'elementor-field-group elementor-column elementor-col-100 elementor-field-type-text' );
+
+				view.addRenderAttribute(
+					'user-label',
+					{
+						for: 'user-<?php echo $this->get_id(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>',
+						class: 'elementor-field-label'
+					}
+				);
+
+				view.addRenderAttribute(
+					'password-label',
+					{
+						for: 'password-<?php echo $this->get_id(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>',
+						class: 'elementor-field-label'
+					}
+				);
+
+				view.addRenderAttribute(
+					'user-input',
+					{
+						size: '1',
+						type: 'text',
+						name: 'log',
+						id: 'user-<?php echo $this->get_id(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>',
+						placeholder: settings.user_placeholder,
+						class: [
+							'elementor-field',
+							'elementor-field-textual',
+							'elementor-size-' + settings.input_size,
+						],
+					}
+				);
+
+				view.addRenderAttribute(
+					'password-input',
+					{
+						size: '1',
+						type: 'password',
+						name: 'pwd',
+						id: 'password-<?php echo $this->get_id(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>',
+						placeholder: settings.password_placeholder,
+						class: [
+							'elementor-field',
+							'elementor-field-textual',
+							'elementor-size-' + settings.input_size,
+						],
+					}
+				);
+
+				if ( ! settings.show_labels ) {
+					view.addRenderAttribute( 'user-label', 'class', 'elementor-screen-only' );
+					view.addRenderAttribute( 'password-label', 'class', 'elementor-screen-only' );
+				}
 				#>
-				<div class="{{ fieldGroupClasses }}">
-					<# if ( settings.show_labels ) { #>
-						<label class="elementor-field-label" for="user" >{{{ settings.user_label }}}</label>
-						<# } #>
-							<input size="1" type="text" id="user" placeholder="{{ settings.user_placeholder }}" class="elementor-field elementor-field-textual elementor-size-{{ settings.input_size }}" />
+				<div {{{ view.getRenderAttributeString( 'field-group' ) }}}>
+					<label {{{ view.getRenderAttributeString( 'user-label' ) }}}>{{ settings.user_label }}</label>
+					<input {{{ view.getRenderAttributeString( 'user-input' ) }}}>
 				</div>
-				<div class="{{ fieldGroupClasses }}">
-					<# if ( settings.show_labels ) { #>
-						<label class="elementor-field-label" for="password" >{{{ settings.password_label }}}</label>
-						<# } #>
-							<input size="1" type="password" id="password" placeholder="{{ settings.password_placeholder }}" class="elementor-field elementor-field-textual elementor-size-{{ settings.input_size }}" />
+				<div {{{ view.getRenderAttributeString( 'field-group' ) }}}>
+					<label {{{ view.getRenderAttributeString( 'password-label' ) }}}>{{ settings.password_label }}</label>
+					<input {{{ view.getRenderAttributeString( 'password-input' ) }}}>
 				</div>
 
 				<# if ( settings.show_remember_me ) { #>

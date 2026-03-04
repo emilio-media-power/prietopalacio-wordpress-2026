@@ -5,6 +5,7 @@ use Elementor\Controls_Manager;
 use ElementorPro\Modules\QueryControl\Module as Module_Query;
 use ElementorPro\Modules\QueryControl\Controls\Group_Control_Related;
 use ElementorPro\Modules\Posts\Skins;
+use ElementorPro\Modules\Posts\Traits\Query_Note_Trait;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -14,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Posts
  */
 class Posts extends Posts_Base {
+
+	use Query_Note_Trait;
 
 	public function get_name() {
 		return 'posts';
@@ -25,6 +28,20 @@ class Posts extends Posts_Base {
 
 	public function get_keywords() {
 		return [ 'posts', 'cpt', 'item', 'loop', 'query', 'cards', 'custom post type' ];
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-posts' ];
 	}
 
 	public function on_import( $element ) {
@@ -65,6 +82,7 @@ class Posts extends Posts_Base {
 		$query_args = [
 			'posts_per_page' => $this->get_posts_per_page_value(),
 			'paged' => $this->get_current_page(),
+			'has_custom_pagination' => $this->is_allow_to_use_custom_page_option(),
 		];
 
 		/** @var Module_Query $elementor_query */
@@ -106,6 +124,10 @@ class Posts extends Posts_Base {
 				],
 			]
 		);
+
+		if ( $this->is_editing_archive_template() ) {
+			$this->inject_archive_query_note( 'posts_query_id', 'posts_post_type', $this );
+		}
 
 		$this->end_controls_section();
 	}

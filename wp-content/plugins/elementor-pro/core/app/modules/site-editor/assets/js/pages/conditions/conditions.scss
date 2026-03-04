@@ -19,7 +19,7 @@
 	&__row {
 		display: flex;
 		flex-grow: 1;
-		margin-top: $e-site-editor-conditions-row-top-spacing;
+		margin-block-start: $e-site-editor-conditions-row-block-start-spacing;
 	}
 
 	&__remove-condition {
@@ -32,7 +32,7 @@
 
 	&__row-controls {
 		overflow: hidden;
-		@include margin-end($e-site-editor-conditions-row-controls-spacing-end);
+		margin-inline-end: $e-site-editor-conditions-row-controls-spacing-end;
 		background-color: var(--e-site-editor-conditions-row-controls-background);
 		display: flex;
 		width: 100%;
@@ -46,7 +46,7 @@
 
 	&__conflict {
 		text-align: center;
-		margin-top: $e-site-editor-conditions-conflict-top-spacing;
+		margin-block-start: $e-site-editor-conditions-conflict-block-start-spacing;
 		color: $e-site-editor-conditions-conflict-color;
 	}
 
@@ -64,31 +64,32 @@
 	}
 
 	&__add-button {
-		margin-top: $e-site-editor-add-button-margin-top;
-		background-color: var(--e-site-editor-add-button-background-color);
-		color: $e-site-editor-add-button-color;
+		margin-block-start: $e-site-editor-add-button-margin-block-start;
+		background-color: var(--e-one-palette-primary-main, var(--e-site-editor-add-button-background-color));
+		border-color: var(--e-one-palette-primary-main, var(--e-site-editor-add-button-background-color));
+		color: var(--e-one-palette-primary-contrast-text, var(--e-one-palette-primary-contrastText, #{$e-site-editor-add-button-color}));
 		text-transform: uppercase;
+		text-decoration: none;
 
-		&:hover {
-			background-color: var(--e-site-editor-add-button-color-hover-background-color);
-			color: $e-site-editor-add-button-color-hover-color;
+		&:hover,
+		&:focus {
+			background-color: var(--e-one-palette-primary-dark, var(--e-site-editor-add-button-color-hover-background-color));
+			border-color: var(--e-one-palette-primary-dark, var(--e-site-editor-add-button-color-hover-background-color));
+			color: var(--e-one-palette-primary-contrast-text, var(--e-one-palette-primary-contrastText, #{$e-site-editor-add-button-color-hover-color}));
+			text-decoration: none;
 		}
 	}
 
 	&__footer {
 		display: flex;
 		justify-content: flex-end;
-		position: absolute;
-		bottom: 0;
-		right: 0;
-		left: 0;
 		padding: $e-site-editor-save-button-container-spacing;
-		border-top: 1px solid var(--hr-color);
+		margin-top: $e-site-editor-save-button-container-margin-top;
 	}
 
 	&__input-wrapper {
 		position: relative;
-		@include border-start($e-site-editor-input-wrapper-border-width $e-site-editor-input-wrapper-border-style);
+		padding-inline-start: $e-site-editor-input-wrapper-border-width $e-site-editor-input-wrapper-border-style;
 		border-color: var(--e-site-editor-input-wrapper-border-color);
 
 		&:first-child {
@@ -109,15 +110,15 @@
 			background: transparent;
 		}
 
-		&:after {
+		&::after {
 			font-family: eicons;
 			content: '\e8ad';
 			font-size: $e-site-editor-input-wrapper-select-arrow-font-size;
 			pointer-events: none;
 			position: absolute;
-			top: 50%;
+			inset-block-start: 50%;
+			inset-inline-end: $e-site-editor-input-wrapper-select-arrow-margin-end;
 			transform: translateY(-50%);
-			@include end($e-site-editor-input-wrapper-select-arrow-margin-end);
 		}
 
 		.select2-container--default .select2-selection--single {
@@ -144,12 +145,12 @@
 	&__input-wrapper--condition-type {
 		position: relative;
 
-		&:before {
+		&::before {
 			font-family: eicons;
 			position: absolute;
-			top: 50%;
 			transform: translateY(-50%);
-			@include start($e-site-editor-input-wrapper-condition-type-icon-start-spacing);
+			inset-block-start: 50%;
+			inset-inline-start: $e-site-editor-input-wrapper-condition-type-icon-start-spacing;
 			font-size: $e-site-editor-input-wrapper-condition-type-icon-font-size;
 			//color: $e-site-editor-input-wrapper-condition-type-icon-color;
 			pointer-events: none;
@@ -158,21 +159,21 @@
 
 		select {
 			text-transform: uppercase;
-			@include padding-start($e-site-editor-input-wrapper-condition-type-start-padding);
+			padding-inline-start: $e-site-editor-input-wrapper-condition-type-start-padding;
 			width: $e-site-editor-input-wrapper-condition-type-width;
 			font-size: $e-site-editor-input-wrapper-condition-type-font-size;
-			@include border-end($e-site-editor-input-wrapper-border-width $e-site-editor-input-wrapper-border-style);
+			border-inline-end: $e-site-editor-input-wrapper-border-width $e-site-editor-input-wrapper-border-style;
 			border-color: var(--e-site-editor-input-wrapper-border-color);
 		}
 
 		&[data-elementor-condition-type="include"] {
-			&:before {
+			&::before {
 				content: '\e8cc';
 			}
 		}
 
 		&[data-elementor-condition-type="exclude"] {
-			&:before {
+			&::before {
 				content: '\e8cd';
 			}
 		}

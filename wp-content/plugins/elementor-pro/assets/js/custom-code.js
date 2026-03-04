@@ -1,4 +1,4 @@
-/*! elementor-pro - v3.13.1 - 11-05-2023 */
+/*! elementor-pro - v3.35.0 - 11-02-2026 */
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
@@ -68,8 +68,7 @@ class BaseContext extends React.Component {
   }
 }
 exports.BaseContext = BaseContext;
-var _default = BaseContext;
-exports["default"] = _default;
+var _default = exports["default"] = BaseContext;
 
 /***/ }),
 
@@ -94,8 +93,7 @@ var _condition = _interopRequireDefault(__webpack_require__(/*! ./models/conditi
 var _conditionsConfig = _interopRequireDefault(__webpack_require__(/*! ./services/conditions-config */ "../core/app/modules/site-editor/assets/js/context/services/conditions-config.js"));
 var _baseContext = _interopRequireDefault(__webpack_require__(/*! ./base-context */ "../core/app/modules/site-editor/assets/js/context/base-context.js"));
 var _commands = __webpack_require__(/*! ../data/commands */ "../core/app/modules/site-editor/assets/js/data/commands/index.js");
-const Context = _react.default.createContext();
-exports.Context = Context;
+const Context = exports.Context = _react.default.createContext();
 class ConditionsProvider extends _baseContext.default {
   static propTypes = {
     children: PropTypes.any.isRequired,
@@ -128,6 +126,7 @@ class ConditionsProvider extends _baseContext.default {
     super(props);
     this.state = {
       ...this.state,
+      conditionsFetched: false,
       conditions: {},
       updateConditionItemState: this.updateConditionItemState.bind(this),
       removeConditionItemInState: this.removeConditionItemInState.bind(this),
@@ -142,13 +141,23 @@ class ConditionsProvider extends _baseContext.default {
    * the subIds.
    */
   componentDidMount() {
-    this.executeAction(ConditionsProvider.actions.FETCH_CONFIG, () => _conditionsConfig.default.create()).then(conditionsConfig => this.conditionsConfig = conditionsConfig).then(this.normalizeConditionsState.bind(this)).then(this.setSubIdTitles.bind(this));
+    this.executeAction(ConditionsProvider.actions.FETCH_CONFIG, () => _conditionsConfig.default.create()).then(conditionsConfig => this.conditionsConfig = conditionsConfig).then(this.normalizeConditionsState.bind(this)).then(() => {
+      this.setSubIdTitles.bind(this);
+      this.setState({
+        conditionsFetched: true
+      });
+    });
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.conditionsFetched && this.state.conditionsFetched) {
+      this.setSubIdTitles();
+    }
   }
 
   /**
    * Execute a request to save the template conditions.
    *
-   * @return {any} -
+   * @return {any} Saved conditions
    */
   saveConditions() {
     const conditions = Object.values(this.state.conditions).map(condition => condition.forDb());
@@ -185,7 +194,7 @@ class ConditionsProvider extends _baseContext.default {
    * Fetching subId titles.
    *
    * @param {any} condition
-   * @return {Promise<unknown>} -
+   * @return {Promise<unknown>} Titles
    */
   fetchSubIdsTitles(condition) {
     return new Promise(resolve => {
@@ -216,9 +225,9 @@ class ConditionsProvider extends _baseContext.default {
           options: this.conditionsConfig.getOptions(),
           subOptions: this.conditionsConfig.getSubOptions(condition.name),
           subIdAutocomplete: this.conditionsConfig.getSubIdAutocomplete(condition.sub),
-          supIdOptions: condition.subId ? [{
+          subIdOptions: condition.subId ? [{
             value: condition.subId,
-            label: condition.subId
+            label: ''
           }] : []
         });
         return {
@@ -256,8 +265,7 @@ class ConditionsProvider extends _baseContext.default {
    * @param {any}     args
    * @param {boolean} shouldCheckConflicts
    */
-  updateConditionItemState(id, args) {
-    let shouldCheckConflicts = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+  updateConditionItemState(id, args, shouldCheckConflicts = true) {
     if (args.name) {
       args.subOptions = this.conditionsConfig.getSubOptions(args.name);
     }
@@ -301,8 +309,7 @@ class ConditionsProvider extends _baseContext.default {
    *
    * @param {boolean} shouldCheckConflicts
    */
-  createConditionItemInState() {
-    let shouldCheckConflicts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+  createConditionItemInState(shouldCheckConflicts = true) {
     const defaultCondition = this.props.currentTemplate.defaultCondition,
       newCondition = new _condition.default({
         name: defaultCondition,
@@ -325,7 +332,7 @@ class ConditionsProvider extends _baseContext.default {
    * Find a condition item from the conditions state.
    *
    * @param {any} id
-   * @return {Condition|null} -
+   * @return {Condition|null} Condition
    */
   findConditionItemInState(id) {
     return Object.values(this.state.conditions).find(c => c.id === id);
@@ -335,7 +342,7 @@ class ConditionsProvider extends _baseContext.default {
    * Update the whole conditions state.
    *
    * @param {Function} callback
-   * @return {Promise<any>} -
+   * @return {Promise<undefined>} Conditions state
    */
   updateConditionsState(callback) {
     return new Promise(resolve => this.setState(prev => ({
@@ -346,7 +353,7 @@ class ConditionsProvider extends _baseContext.default {
   /**
    * Renders the provider.
    *
-   * @return {any} -
+   * @return {any} Element
    */
   render() {
     if (this.state.action.current === ConditionsProvider.actions.FETCH_CONFIG) {
@@ -363,8 +370,7 @@ class ConditionsProvider extends _baseContext.default {
   }
 }
 exports.ConditionsProvider = ConditionsProvider;
-var _default = ConditionsProvider;
-exports["default"] = _default;
+var _default = exports["default"] = ConditionsProvider;
 
 /***/ }),
 
@@ -465,7 +471,7 @@ class ConditionsConfig {
   }
 
   /**
-   * @return {Promise<ConditionsConfig>} -
+   * @return {Promise<ConditionsConfig>} Conditions config
    */
   static create() {
     if (ConditionsConfig.instance) {
@@ -482,14 +488,13 @@ class ConditionsConfig {
   /**
    * Get main options for condition name.
    *
-   * @return {Array} -
+   * @return {Array} Condition options
    */
   getOptions() {
-    return this.getSubOptions('general', true).map(_ref => {
-      let {
-        label,
-        value
-      } = _ref;
+    return this.getSubOptions('general', true).map(({
+      label,
+      value
+    }) => {
       return {
         label,
         value
@@ -502,10 +507,9 @@ class ConditionsConfig {
    *
    * @param {string}  itemName
    * @param {boolean} isSubItem
-   * @return {Array} -
+   * @return {Array} Sub options
    */
-  getSubOptions(itemName) {
-    let isSubItem = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+  getSubOptions(itemName, isSubItem = false) {
     const config = this.config[itemName];
     if (!config) {
       return [];
@@ -527,7 +531,7 @@ class ConditionsConfig {
    * Get the autocomplete property from the conditions config
    *
    * @param {string} sub
-   * @return {{}|any} -
+   * @return {{}|any} Conditions autocomplete
    */
   getSubIdAutocomplete(sub) {
     const config = this.config[sub];
@@ -545,7 +549,7 @@ class ConditionsConfig {
    * Calculate instances from the conditions.
    *
    * @param {Array} conditions
-   * @return {Object} -
+   * @return {Object} Conditions Instances
    */
   calculateInstances(conditions) {
     let instances = conditions.reduce((current, condition) => {
@@ -570,8 +574,7 @@ class ConditionsConfig {
   }
 }
 exports.ConditionsConfig = ConditionsConfig;
-var _default = ConditionsConfig;
-exports["default"] = _default;
+var _default = exports["default"] = ConditionsConfig;
 
 /***/ }),
 
@@ -595,8 +598,7 @@ class ConditionsConfig extends $e.modules.CommandData {
   }
 }
 exports.ConditionsConfig = ConditionsConfig;
-var _default = ConditionsConfig;
-exports["default"] = _default;
+var _default = exports["default"] = ConditionsConfig;
 
 /***/ }),
 
@@ -663,8 +665,7 @@ class TemplatesConditionsConflicts extends $e.modules.CommandData {
   }
 }
 exports.TemplatesConditionsConflicts = TemplatesConditionsConflicts;
-var _default = TemplatesConditionsConflicts;
-exports["default"] = _default;
+var _default = exports["default"] = TemplatesConditionsConflicts;
 
 /***/ }),
 
@@ -688,8 +689,7 @@ class TemplatesConditions extends $e.modules.CommandData {
   }
 }
 exports.TemplatesConditions = TemplatesConditions;
-var _default = TemplatesConditions;
-exports["default"] = _default;
+var _default = exports["default"] = TemplatesConditions;
 
 /***/ }),
 
@@ -713,8 +713,7 @@ class Templates extends $e.modules.CommandData {
   }
 }
 exports.Templates = Templates;
-var _default = Templates;
-exports["default"] = _default;
+var _default = exports["default"] = Templates;
 
 /***/ }),
 
@@ -732,8 +731,8 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = void 0;
 var dataCommands = _interopRequireWildcard(__webpack_require__(/*! ./commands */ "../core/app/modules/site-editor/assets/js/data/commands/index.js"));
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 class Component extends $e.modules.ComponentBase {
   static namespace = 'site-editor';
   getNamespace() {
@@ -747,6 +746,39 @@ exports["default"] = Component;
 
 /***/ }),
 
+/***/ "../core/app/modules/site-editor/assets/js/pages/conditions/condition-button-portal.js":
+/*!*********************************************************************************************!*\
+  !*** ../core/app/modules/site-editor/assets/js/pages/conditions/condition-button-portal.js ***!
+  \*********************************************************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", ({
+  value: true
+}));
+exports["default"] = void 0;
+var _reactDom = __webpack_require__(/*! react-dom */ "react-dom");
+var _react = __webpack_require__(/*! react */ "react");
+var PropTypes = _interopRequireWildcard(__webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js"));
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const ConditionButtonPortal = props => {
+  const [shouldCreatePortal, setShouldCreatePortal] = (0, _react.useState)(false),
+    portalRoot = document.getElementById('portal-root');
+  (0, _react.useEffect)(() => {
+    setShouldCreatePortal(!!portalRoot);
+  }, [portalRoot]);
+  return shouldCreatePortal ? (0, _reactDom.createPortal)(props.children, portalRoot) : null;
+};
+ConditionButtonPortal.propTypes = {
+  children: PropTypes.oneOfType([PropTypes.node, PropTypes.string])
+};
+var _default = exports["default"] = ConditionButtonPortal;
+
+/***/ }),
+
 /***/ "../core/app/modules/site-editor/assets/js/pages/conditions/condition-conflicts.js":
 /*!*****************************************************************************************!*\
   !*** ../core/app/modules/site-editor/assets/js/pages/conditions/condition-conflicts.js ***!
@@ -754,6 +786,7 @@ exports["default"] = Component;
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
+/* provided dependency */ var sprintf = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n")["sprintf"];
 /* provided dependency */ var __ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n")["__"];
 /* provided dependency */ var PropTypes = __webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js");
 
@@ -780,7 +813,8 @@ function ConditionConflicts(props) {
   return /*#__PURE__*/_react.default.createElement(_appUi.Text, {
     className: "e-site-editor-conditions__conflict",
     variant: "sm"
-  }, __('Elementor recognized that you have set this location for other templates: ', 'elementor-pro'), " ", conflictLinks);
+  }, sprintf(/* Translators: %s: a list of conflicted templates */
+  __('We noticed that you already applied %s with the same condition.', 'elementor-pro'), conflictLinks), /*#__PURE__*/_react.default.createElement("br", null), __("To continue, set different conditions for each so they don't conflict.", 'elementor-pro'));
 }
 ConditionConflicts.propTypes = {
   conflicts: PropTypes.array.isRequired
@@ -858,7 +892,7 @@ var _appUi = __webpack_require__(/*! @elementor/app-ui */ "@elementor/app-ui");
  * Main component.
  *
  * @param {any} props
- * @return {any} -
+ * @return {any} Element
  * @class
  */
 function ConditionSubId(props) {
@@ -884,7 +918,7 @@ function ConditionSubId(props) {
  * that passes as a prop
  *
  * @param {any} autocomplete
- * @return {Object} -
+ * @return {Object} Settings
  */
 function getSettings(autocomplete) {
   return {
@@ -1058,6 +1092,7 @@ var _conditionName = _interopRequireDefault(__webpack_require__(/*! ./condition-
 var _conditionSub = _interopRequireDefault(__webpack_require__(/*! ./condition-sub */ "../core/app/modules/site-editor/assets/js/pages/conditions/condition-sub.js"));
 var _conditionSubId = _interopRequireDefault(__webpack_require__(/*! ./condition-sub-id */ "../core/app/modules/site-editor/assets/js/pages/conditions/condition-sub-id.js"));
 var _conditionConflicts = _interopRequireDefault(__webpack_require__(/*! ./condition-conflicts */ "../core/app/modules/site-editor/assets/js/pages/conditions/condition-conflicts.js"));
+var _conditionButtonPortal = _interopRequireDefault(__webpack_require__(/*! ./condition-button-portal */ "../core/app/modules/site-editor/assets/js/pages/conditions/condition-button-portal.js"));
 function ConditionsRows(props) {
   const {
     conditions,
@@ -1093,6 +1128,17 @@ function ConditionsRows(props) {
   })), /*#__PURE__*/_react.default.createElement(_conditionConflicts.default, {
     conflicts: condition.conflictErrors
   })));
+  const SaveButton = () => {
+    return /*#__PURE__*/_react.default.createElement(_appUi.Button, {
+      variant: "contained",
+      color: "primary",
+      size: "lg",
+      hideText: isSaving,
+      icon: isSaving ? 'eicon-loading eicon-animation-spin' : '',
+      text: __('Save & Close', 'elementor-pro'),
+      onClick: () => save().then(props.onAfterSave)
+    });
+  };
   const isSaving = action.current === _conditions.ConditionsProvider.actions.SAVE && action.loading;
   return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, action.error && /*#__PURE__*/_react.default.createElement(_appUi.Dialog, {
     text: action.error,
@@ -1114,18 +1160,11 @@ function ConditionsRows(props) {
     onClick: create
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "e-site-editor-conditions__footer"
-  }, /*#__PURE__*/_react.default.createElement(_appUi.Button, {
-    variant: "contained",
-    color: "primary",
-    size: "lg",
-    hideText: isSaving,
-    icon: isSaving ? 'eicon-loading eicon-animation-spin' : '',
-    text: __('Save & Close', 'elementor-pro'),
-    onClick: () => save().then(props.onAfterSave)
-  })));
+  }, props?.loadPortal ? /*#__PURE__*/_react.default.createElement(_conditionButtonPortal.default, null, /*#__PURE__*/_react.default.createElement(SaveButton, null)) : /*#__PURE__*/_react.default.createElement(SaveButton, null)));
 }
 ConditionsRows.propTypes = {
-  onAfterSave: PropTypes.func
+  onAfterSave: PropTypes.func,
+  loadPortal: PropTypes.bool
 };
 
 /***/ }),
@@ -1150,8 +1189,8 @@ var _react = _interopRequireWildcard(__webpack_require__(/*! react */ "react"));
 var _appUi = __webpack_require__(/*! @elementor/app-ui */ "@elementor/app-ui");
 var _conditions = _interopRequireDefault(__webpack_require__(/*! ./conditions */ "../modules/custom-code/assets/js/admin/publish-metabox/conditions.js"));
 var _conditionsConfig = _interopRequireDefault(__webpack_require__(/*! elementor-pro-app-modules/site-editor/assets/js/context/services/conditions-config */ "../core/app/modules/site-editor/assets/js/context/services/conditions-config.js"));
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
  * Publish metabox conditions ( 'Edit' modal ).
  */
@@ -1256,7 +1295,7 @@ function ConditionsModal() {
   if (!post || !data.conditions) {
     return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(_appUi.Text, {
       tag: "span"
-    }, __('Loading', 'elementor')), /*#__PURE__*/_react.default.createElement(_appUi.Icon, {
+    }, __('Loading', 'elementor-pro')), /*#__PURE__*/_react.default.createElement(_appUi.Icon, {
       className: "spinner"
     }));
   }
@@ -1265,12 +1304,12 @@ function ConditionsModal() {
     className: "post-conditions-display"
   }, /*#__PURE__*/_react.default.createElement("b", null, data.instances + ' ')), /*#__PURE__*/_react.default.createElement(_appUi.Button, {
     onClick: () => setShowModal(true),
-    text: __('Edit', 'elementor'),
+    text: __('Edit', 'elementor-pro'),
     variant: "underlined"
   }), /*#__PURE__*/_react.default.createElement(_appUi.ModalProvider, {
     show: showModal,
     setShow: setShowModal,
-    title: __('Publish Settings', 'elementor'),
+    title: __('Publish Settings', 'elementor-pro'),
     icon: "eps-app__logo eicon-elementor"
   }, /*#__PURE__*/_react.default.createElement(_appUi.CssGrid, {
     columns: 1,
@@ -1338,7 +1377,8 @@ function Conditions(props) {
     currentTemplate: currentTemplateProps,
     onConditionsSaved: onConditionsSaved
   }, /*#__PURE__*/_react.default.createElement(_conditionsRows.default, {
-    onAfterSave: props.onAfterSave
+    onAfterSave: props.onAfterSave,
+    loadPortal: false
   })));
 }
 Conditions.propTypes = {
@@ -2469,6 +2509,17 @@ module.exports = React;
 
 /***/ }),
 
+/***/ "react-dom":
+/*!***************************!*\
+  !*** external "ReactDOM" ***!
+  \***************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = ReactDOM;
+
+/***/ }),
+
 /***/ "elementor-ai-admin":
 /*!**********************************************!*\
   !*** external "__UNSTABLE__elementorAI.App" ***!
@@ -2509,18 +2560,13 @@ module.exports = wp.i18n;
 /***/ ((module) => {
 
 function _extends() {
-  module.exports = _extends = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
+  return module.exports = _extends = Object.assign ? Object.assign.bind() : function (n) {
+    for (var e = 1; e < arguments.length; e++) {
+      var t = arguments[e];
+      for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
     }
-    return target;
-  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
-  return _extends.apply(this, arguments);
+    return n;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports, _extends.apply(null, arguments);
 }
 module.exports = _extends, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -2532,9 +2578,9 @@ module.exports = _extends, module.exports.__esModule = true, module.exports["def
   \***********************************************************************/
 /***/ ((module) => {
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : {
-    "default": obj
+function _interopRequireDefault(e) {
+  return e && e.__esModule ? e : {
+    "default": e
   };
 }
 module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
@@ -2595,7 +2641,9 @@ class CustomCode extends elementorModules.Module {
   }
   initialize() {
     $e.components.register(new _component.default());
-    ReactDOM.render( /*#__PURE__*/_react.default.createElement(_conditionsModal.default, null), document.querySelector('.post-conditions'));
+
+    // eslint-disable-next-line react/no-deprecated
+    ReactDOM.render(/*#__PURE__*/_react.default.createElement(_conditionsModal.default, null), document.querySelector('.post-conditions'));
     this.addTipsyToFields();
     this.addDescription();
     this.addLocationChangeHandler();
@@ -2620,12 +2668,15 @@ class CustomCode extends elementorModules.Module {
     });
   }
   addOpenAIButton() {
-    const $buttonOpenAI = jQuery(`<button class="e-ai-button"><i class="eicon-ai"></i> ${__('Write me code', 'elementor-pro')}</button>`);
+    const $buttonOpenAI = jQuery(`<button class="e-ai-button"><i class="eicon-ai"></i> ${__('Code with AI', 'elementor-pro')}</button>`);
     $buttonOpenAI.on('click', event => {
       event.preventDefault();
+      const isRTL = elementorCommon.config.isRTL;
       const rootElement = document.createElement('div');
       document.body.append(rootElement);
-      ReactDOM.render( /*#__PURE__*/_react.default.createElement(_elementorAiAdmin.default, {
+
+      // eslint-disable-next-line react/no-deprecated
+      ReactDOM.render(/*#__PURE__*/_react.default.createElement(_elementorAiAdmin.default, {
         type: 'code',
         getControlValue: () => document.querySelector('.CodeMirror').CodeMirror.getValue(),
         setControlValue: value => document.querySelector('.CodeMirror').CodeMirror.setValue(value),
@@ -2633,9 +2684,10 @@ class CustomCode extends elementorModules.Module {
           codeLanguage: 'html'
         },
         onClose: () => {
-          ReactDOM.unmountComponentAtNode(rootElement);
+          ReactDOM.unmountComponentAtNode(rootElement); // eslint-disable-line react/no-deprecated
           rootElement.parentNode.removeChild(rootElement);
-        }
+        },
+        isRTL: isRTL
       }), rootElement);
     });
     jQuery('.elementor-field.location.elementor-field-select').after($buttonOpenAI);

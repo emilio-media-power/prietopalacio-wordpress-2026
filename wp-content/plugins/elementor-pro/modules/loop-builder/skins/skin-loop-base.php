@@ -1,18 +1,20 @@
 <?php
 namespace ElementorPro\Modules\LoopBuilder\Skins;
 
-use Elementor\Core\Files\CSS\Post;
-use Elementor\Core\Files\CSS\Post as Post_CSS;
-use Elementor\Core\Files\CSS\Post_Preview;
-use Elementor\Icons_Manager;
 use ElementorPro\Modules\LoopBuilder\Documents\Loop;
 use ElementorPro\Modules\LoopBuilder\Documents\Loop as LoopDocument;
+use ElementorPro\Modules\LoopBuilder\Files\Css\Loop as Loop_CSS;
+use ElementorPro\Modules\LoopBuilder\Files\Css\Loop_Preview;
 use ElementorPro\Modules\LoopBuilder\Module;
 use ElementorPro\Modules\LoopBuilder\Widgets\Base as Loop_Widget_Base;
 use ElementorPro\Modules\Posts\Skins\Skin_Base;
 use ElementorPro\Modules\QueryControl\Controls\Group_Control_Related;
 use ElementorPro\Plugin;
-use ElementorPro\Modules\LoopBuilder\Files\Css\Loop_Dynamic_CSS;
+use ElementorPro\Modules\LoopBuilder\Traits\Alternate_Templates_Trait;
+use Elementor\Utils;
+use Elementor\Core\Files\CSS\Post as Post_CSS;
+use ElementorPro\Modules\LoopBuilder\Files\Css\Loop_Css_Trait;
+use ElementorPro\Modules\Posts\Traits\Query_Note_Trait;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -27,8 +29,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Skin_Loop_Base extends Skin_Base {
 
-	public $already_added_border = [];
-	private $current_alternate_template_repetaer_id = null;
+	use Alternate_Templates_Trait;
+	use Loop_Css_Trait;
+	use Query_Note_Trait;
 
 	public function get_id() {
 		return MODULE::LOOP_BASE_SKIN_ID;
@@ -58,9 +61,13 @@ class Skin_Loop_Base extends Skin_Base {
 				],
 			]
 		);
+
+		if ( 'loop-grid' === $widget->get_name() && $this->is_editing_archive_template() ) {
+			$this->inject_archive_query_note( 'post_query_query_id', 'post_query_post_type', $widget );
+		}
 	}
 
-	private function maybe_add_load_more_wrapper_class() {
+	protected function maybe_add_load_more_wrapper_class() {
 		$settings = $this->parent->get_settings_for_display();
 		/** @var Loop_Widget_Base $widget */
 		$widget = $this->parent;
@@ -72,14 +79,50 @@ class Skin_Loop_Base extends Skin_Base {
 		}
 	}
 
+	public function query_posts() {
+		return $this->query_posts_for_alternate_templates();
+	}
+
+	/**
+	 * Enqueue Loop Document CSS Meta
+	 *
+	 * Process the template before beginning to loop through the items. This ensures that
+	 * elements with dynamic CSS are identified before each individual item is rendered.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return void
+	 */
+	protected function enqueue_loop_document_css_meta( $post_id ) {
+		if ( $this->post_meta_css_exists( $post_id ) ) {
+			return;
+		}
+
+		if ( wp_is_post_autosave( $post_id ) ) {
+			$css_file = Loop_Preview::create( $post_id );
+		} else {
+			$css_file = Loop_CSS::create( $post_id );
+		}
+
+		/** @var Loop|Loop_Preview $css_file */
+		$css_file->update();
+	}
+
+	private function post_meta_css_exists( $post_id ) {
+		return ! empty( get_post_meta( $post_id, Post_CSS::META_KEY ) );
+	}
+
 	public function render() {
-		$settings = $this->parent->get_settings_for_display();
+		$template_id = $this->parent->get_settings_for_display( 'template_id' );
 		$is_edit_mode = Plugin::elementor()->editor->is_edit_mode();
 		/** @var Loop_Widget_Base $widget */
 		$widget = $this->parent;
 		$current_document = Plugin::elementor()->documents->get_current();
 
-		if ( ! empty( $settings['template_id'] ) ) {
+		if ( $template_id ) {
+			$this->enqueue_loop_document_css_meta( $template_id );
+			$this->alternate_template_before_skin_render();
+
 			$this->maybe_add_load_more_wrapper_class();
 
 			$widget->before_skin_render();
@@ -87,6 +130,8 @@ class Skin_Loop_Base extends Skin_Base {
 			parent::render();
 
 			$widget->after_skin_render();
+
+			$this->alternate_template_after_skin_render();
 		} elseif ( $is_edit_mode ) {
 			$this->render_empty_view();
 		}
@@ -96,97 +141,39 @@ class Skin_Loop_Base extends Skin_Base {
 		}
 	}
 
-	/**
-	 * @param $at
-	 * @param $current_item_index
-	 * @param int $template_id
-	 * @return int
-	 */
-	private function get_template_id_for_repeating_template( $at, $current_item_index, int $template_id ): int {
-		if ( $this->is_need_to_show_alternate_template( $at['repeat_template'], $current_item_index ) ) {
-			$template_id = $at['template_id'];
-			$this->current_alternate_template_repetaer_id = $at['_id'];
+	protected function add_render_hooks() {
+		global $wp_query;
+		$wp_query->is_loop_widget = true;
+
+		add_filter( 'elementor-pro/off-canvas/id', [ $this, 'filter_off_canvas_id' ] );
+	}
+
+	protected function remove_render_hooks() {
+		global $wp_query;
+		unset( $wp_query->is_loop_widget );
+
+		remove_filter( 'elementor-pro/off-canvas/id', [ $this, 'filter_off_canvas_id' ] );
+	}
+
+	public function filter_off_canvas_id( $off_canvas_id ) {
+		return $this->parent->get_id() . '-' . get_the_ID() . '-' . $off_canvas_id;
+	}
+
+	protected function handle_no_posts_found() {
+		$settings = $this->parent->get_settings_for_display();
+
+		?>
+		<div class="e-loop-nothing-found-message">
+		<?php
+		if ( isset( $settings['enable_nothing_found_message'] ) && 'yes' === $settings['enable_nothing_found_message'] ) {
+			$nothing_found_message_html_tag = Utils::validate_html_tag( $settings['nothing_found_message_html_tag'] ); ?>
+			<<?php Utils::print_validated_html_tag( $nothing_found_message_html_tag ); ?> class="e-loop-nothing-found-message__text">
+				<?php Utils::print_unescaped_internal_string( $settings['nothing_found_message_text'] ); ?>
+			</<?php Utils::print_validated_html_tag( $nothing_found_message_html_tag ); ?>>
+			<?php
 		}
-		return $template_id;
-	}
-
-	public function add_alternate_template_border_wrapper_class( $attributes, $document ) {
-		$attributes['class'] .= ' e-loop-alternate-template';
-
-		return $attributes;
-	}
-
-	/**
-	 * @param $attributes
-	 * @param $document
-	 * @return mixed
-	 */
-	public function add_alternate_template_col_span_wrapper_class( $attributes, $document ) {
-
-		$attributes['class'] .= ' elementor-repeater-item-' . $this->current_alternate_template_repetaer_id;
-
-		return $attributes;
-	}
-
-	private function item_has_alternate_template() {
-		return isset( $this->current_alternate_template_repetaer_id );
-	}
-
-	/**
-	 * @param $at
-	 * @param $current_item_index
-	 * @param int $template_id
-	 * @return int
-	 */
-	private function get_template_id_to_show_once( $at, $current_item_index, int $template_id ): int {
-		if ( $at['repeat_template'] === $current_item_index ) {
-			$template_id = $at['template_id'];
-			$this->current_alternate_template_repetaer_id = $at['_id'];
-		}
-		return $template_id;
-	}
-
-	/**
-	 * @param $at
-	 * @param $current_item_index
-	 * @param int $template_id
-	 * @return int
-	 */
-	private function get_template_id( $at, $current_item_index, int $template_id ): int {
-		$at['repeat_template'] = (int) $at['repeat_template'];
-		$at['template_id'] = (int) $at['template_id'];
-
-		if ( $this->is_valid_template_id( $at ) ) {
-			$template_id = $this->is_show_once( $at ) ?
-					$this->get_template_id_to_show_once( $at, $current_item_index, $template_id ) :
-					$this->get_template_id_for_repeating_template( $at, $current_item_index, $template_id );
-		}
-		return $template_id;
-	}
-
-	/**
-	 * @param $repeat_template
-	 * @param $current_item_index
-	 * @return bool
-	 */
-	private function is_need_to_show_alternate_template( $repeat_template, $current_item_index ): bool {
-		return $this->is_multiple_of( $repeat_template, $current_item_index );
-	}
-
-	/**
-	 * @param $at
-	 * @return bool
-	 */
-	private function is_show_once( $at ): bool {
-		return isset( $at['show_once'] ) && 'yes' === $at['show_once'];
-	}
-
-	/**
-	 * @param $at
-	 * @return bool
-	 */
-	private function is_valid_template_id( $at ): bool {
-		return $at['repeat_template'] > 0 && $at['template_id'] > 0;
+		?></div>
+		<?php
 	}
 
 	protected function get_loop_header_widget_classes() {
@@ -204,28 +191,6 @@ class Skin_Loop_Base extends Skin_Base {
 		add_action( 'elementor/element/' . $this->parent->get_name() . '/section_query/after_section_start', [ $this, 'register_query_controls' ] );
 	}
 
-	private function add_alternate_template_wrapper_classes( $template_id ) {
-		if ( $this->item_has_alternate_template() ) {
-			add_filter( 'elementor/document/wrapper_attributes', [ $this, 'add_alternate_template_col_span_wrapper_class' ], 10, 2 );
-		}
-
-		if ( $this->should_add_border_around_alternate_template( $template_id ) ) {
-			add_filter( 'elementor/document/wrapper_attributes', [ $this, 'add_alternate_template_border_wrapper_class' ], 10, 2 );
-			$this->already_added_border[] = $template_id;
-		}
-	}
-
-	private function remove_alternate_template_wrapper_classes( $template_id ) {
-		if ( $this->added_border_around_alternate_template( $template_id ) ) {
-			remove_filter( 'elementor/document/wrapper_attributes', [ $this, 'add_alternate_template_border_wrapper_class' ] );
-		}
-
-		if ( $this->item_has_alternate_template() ) {
-			remove_filter( 'elementor/document/wrapper_attributes', [ $this, 'add_alternate_template_col_span_wrapper_class' ] );
-			$this->current_alternate_template_repetaer_id = null;
-		}
-	}
-
 	/**
 	 * Render Post
 	 *
@@ -234,10 +199,15 @@ class Skin_Loop_Base extends Skin_Base {
 	 * @since 3.8.0
 	 */
 	protected function render_post() {
-		$loop_item_id = get_the_ID();
-		$template_id = $this->get_template_id_for_current_item();
+		if ( $this->has_alternate_templates() ) {
+			$this->render_post_if_widget_has_alternate_templates();
+		} else {
+			$this->render_post_content( $this->parent->get_settings_for_display( 'template_id' ) );
+		}
+	}
 
-		$this->add_alternate_template_wrapper_classes( $template_id );
+	private function render_post_content( $template_id ) {
+		$post_id = get_the_ID();
 
 		/** @var LoopDocument $document */
 		$document = Plugin::elementor()->documents->get( $template_id );
@@ -246,84 +216,8 @@ class Skin_Loop_Base extends Skin_Base {
 			return;
 		}
 
-		$this->print_dynamic_css( $loop_item_id, $template_id );
+		$this->print_dynamic_css( $post_id, $template_id );
 		$document->print_content();
-
-		$this->remove_alternate_template_wrapper_classes( $template_id );
-	}
-
-	private function should_add_border_around_alternate_template( $template_id ) {
-		return $this->item_has_alternate_template()
-			&& ! in_array( $template_id, $this->already_added_border )
-			&& $this->parent->get_settings_for_display( 'template_id' ) !== $template_id
-			&& Plugin::elementor()->editor->is_edit_mode();
-	}
-
-	private function added_border_around_alternate_template( $template_id ) {
-		return in_array( $template_id, $this->already_added_border );
-	}
-
-	protected function get_template_id_for_current_item() {
-		$settings = $this->parent->get_settings_for_display();
-		$template_id = $settings['template_id'];
-
-		if ( empty( $settings['alternate_template'] ) || ! is_array( $settings['alternate_templates'] ) ) {
-			return $template_id;
-		}
-
-		$current_item_index = $this->get_current_item_index();
-
-		foreach ( $settings['alternate_templates'] as $at ) {
-			$template_id = $this->get_template_id( $at, $current_item_index, $template_id );
-		}
-
-		return $template_id;
-	}
-
-	protected function get_current_item_index() {
-		/** @var \WP_Query $query */
-		$query = $this->parent->get_query();
-
-		$current_item = 0;
-
-		if ( isset( $query->current_post ) ) {
-			$current_item += $query->current_post + 1;
-		}
-
-		if ( isset( $query->query['paged'] ) && $query->query['paged'] > 1 && isset( $query->query['posts_per_page'] ) ) {
-			$current_item += $query->query['posts_per_page'] * ( $query->query['paged'] - 1 );
-		}
-
-		return $current_item;
-	}
-
-	private function is_multiple_of( $input, $to_be_checked ) {
-		return 0 === $to_be_checked % $input;
-	}
-
-	protected function print_dynamic_css( $post_id, $post_id_for_data ) {
-		$document = Plugin::elementor()->documents->get_doc_for_frontend( $post_id_for_data );
-
-		if ( ! $document ) {
-			return;
-		}
-
-		Plugin::elementor()->documents->switch_to_document( $document );
-
-		$css_file = Loop_Dynamic_CSS::create( $post_id, $post_id_for_data );
-		$post_css = $css_file->get_content();
-
-		if ( empty( $post_css ) ) {
-			return;
-		}
-
-		$css = '';
-		$css = str_replace( '.elementor-' . $post_id, '.e-loop-item-' . $post_id, $post_css );
-		$css = sprintf( '<style id="%s">%s</style>', 'loop-dynamic-' . $post_id_for_data, $css );
-
-		echo $css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-
-		Plugin::elementor()->documents->restore_document();
 	}
 
 	protected function render_loop_header() {

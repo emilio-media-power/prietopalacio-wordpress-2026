@@ -51,6 +51,8 @@ class Module extends BaseModule {
 				'utm_term' => '%%page%%', // Will be replaced in the frontend.
 			] ),
 			'access_level' => API::get_library_access_level( 'kit' ),
+			'access_tier' => API::get_access_tier(),
+			'plan_type' => API::get_plan_type(),
 		] ) );
 	}
 

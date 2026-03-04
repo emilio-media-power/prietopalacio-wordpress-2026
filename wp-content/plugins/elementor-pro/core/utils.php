@@ -2,6 +2,7 @@
 namespace ElementorPro\Core;
 
 use ElementorPro\Plugin;
+use ElementorPro\Modules\LoopBuilder\Providers\Taxonomy_Loop_Provider;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -61,7 +62,7 @@ class Utils {
 		];
 
 		foreach ( $server_ip_keys as $key ) {
-			$value = self::_unstable_get_super_global_value( $_SERVER, $key );
+			$value = static::_unstable_get_super_global_value( $_SERVER, $key );
 			if ( $value && filter_var( $value, FILTER_VALIDATE_IP ) ) {
 				return $value;
 			}
@@ -76,7 +77,7 @@ class Utils {
 	}
 
 	public static function get_current_post_id() {
-		if ( isset( Plugin::elementor()->documents ) ) {
+		if ( isset( Plugin::elementor()->documents ) && Plugin::elementor()->documents->get_current() ) {
 			return Plugin::elementor()->documents->get_current()->get_main_id();
 		}
 
@@ -85,7 +86,11 @@ class Utils {
 
 	public static function get_the_archive_url() {
 		$url = '';
-		if ( is_category() || is_tag() || is_tax() ) {
+
+		if ( Taxonomy_Loop_Provider::is_loop_taxonomy_strict() ) {
+			global $wp_query;
+			$url = get_term_link( $wp_query->loop_term );
+		} elseif ( is_category() || is_tag() || is_tax() ) {
 			$url = get_term_link( get_queried_object() );
 		} elseif ( is_author() ) {
 			$url = get_author_posts_url( get_queried_object_id() );
@@ -318,13 +323,18 @@ class Utils {
 	 * @return string
 	 */
 	public static function trim_words( $text, $length ) {
-		if ( $length && str_word_count( $text ) > $length ) {
-			$text = explode( ' ', $text, $length + 1 );
-			unset( $text[ $length ] );
-			$text = implode( ' ', $text );
+		if ( ! $length ) {
+			return $text;
 		}
 
-		return $text;
+		$whitespace_pattern = '/\s+/u';
+		$words = preg_split( $whitespace_pattern, $text, -1, PREG_SPLIT_NO_EMPTY );
+
+		if ( count( $words ) > $length ) {
+			$words = array_slice( $words, 0, $length );
+		}
+
+		return implode( ' ', $words );
 	}
 
 	/**
@@ -362,7 +372,7 @@ class Utils {
 
 	/**
 	 * TODO: Use core method instead (after Pro minimum requirements is updated).
-	 * PR URL: https://github.com/elementor/elementor/pull/20392
+	 * PR URL: https://github.com/elementor/elementor/pull/24092
 	 */
 	public static function _unstable_get_super_global_value( $super_global, $key ) {
 		if ( ! isset( $super_global[ $key ] ) ) {
@@ -370,11 +380,24 @@ class Utils {
 		}
 
 		if ( $_FILES === $super_global ) {
-			$super_global[ $key ]['name'] = sanitize_file_name( $super_global[ $key ]['name'] );
-			return $super_global[ $key ];
+			return isset( $super_global[ $key ]['name'] ) ?
+				static::sanitize_file_name( $super_global[ $key ] ) :
+				static::sanitize_multi_upload( $super_global[ $key ] );
 		}
 
 		return wp_kses_post_deep( wp_unslash( $super_global[ $key ] ) );
+	}
+
+	private static function sanitize_multi_upload( $fields ) {
+		return array_map( function( $field ) {
+			return array_map( [ __CLASS__, 'sanitize_file_name' ], $field );
+		}, $fields );
+	}
+
+	private static function sanitize_file_name( $file ) {
+		$file['name'] = sanitize_file_name( $file['name'] );
+
+		return $file;
 	}
 
 	/**
@@ -393,5 +416,39 @@ class Utils {
 		}
 
 		return $document;
+	}
+
+	public static function format_control_condition( $name, $operator, $value ) {
+		return compact( 'name', 'operator', 'value' );
+	}
+
+	public static function create_widget_instance_from_db( $post_id, $widget_id ) {
+		$document = Plugin::elementor()->documents->get( $post_id );
+		$widget_data = \Elementor\Utils::find_element_recursive( $document->get_elements_data(), $widget_id );
+
+		return Plugin::elementor()->elements_manager->create_element_instance( $widget_data );
+	}
+
+	public static function has_invalid_post_permissions( $post ): bool {
+		$is_image_attachment = 'attachment' === $post->post_type && strpos( $post->post_mime_type, 'image/' ) === 0;
+
+		if ( $is_image_attachment ) {
+			return false;
+		}
+
+		$is_private = 'private' === $post->post_status
+			&& ! current_user_can( 'read_private_posts', $post->ID );
+
+		$not_allowed = 'publish' !== $post->post_status
+			&& ! current_user_can( 'edit_post', $post->ID );
+
+		$password_required = post_password_required( $post->ID )
+			&& ! current_user_can( 'edit_post', $post->ID );
+
+		return $is_private || $not_allowed || $password_required;
+	}
+
+	public static function is_sale_time(): bool {
+		return \Elementor\Utils::is_sale_time();
 	}
 }

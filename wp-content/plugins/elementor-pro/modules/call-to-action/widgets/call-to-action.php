@@ -9,6 +9,7 @@ use Elementor\Group_Control_Border;
 use Elementor\Group_Control_Box_Shadow;
 use Elementor\Group_Control_Css_Filter;
 use Elementor\Group_Control_Image_Size;
+use Elementor\Group_Control_Text_Shadow;
 use Elementor\Group_Control_Typography;
 use Elementor\Group_Control_Text_Stroke;
 use Elementor\Icons_Manager;
@@ -36,6 +37,28 @@ class Call_To_Action extends Base_Widget {
 
 	public function get_keywords() {
 		return [ 'call to action', 'cta', 'button' ];
+	}
+
+	protected function is_dynamic_content(): bool {
+		return false;
+	}
+
+	public function has_widget_inner_wrapper(): bool {
+		return ! Plugin::elementor()->experiments->is_feature_active( 'e_optimized_markup' );
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * Retrieve the list of style dependencies the widget requires.
+	 *
+	 * @since 3.24.0
+	 * @access public
+	 *
+	 * @return array Widget style dependencies.
+	 */
+	public function get_style_depends(): array {
+		return [ 'widget-call-to-action', 'e-transitions' ];
 	}
 
 	protected function register_controls() {
@@ -79,6 +102,10 @@ class Call_To_Action extends Base_Widget {
 						'title' => esc_html__( 'Right', 'elementor-pro' ),
 						'icon' => 'eicon-h-align-right',
 					],
+					'below' => [
+						'title' => esc_html__( 'Below', 'elementor-pro' ),
+						'icon' => 'eicon-v-align-bottom',
+					],
 				],
 				'prefix_class' => 'elementor-cta-%s-layout-image-',
 				'condition' => [
@@ -110,7 +137,6 @@ class Call_To_Action extends Base_Widget {
 				'condition' => [
 					'bg_image[id]!' => '',
 				],
-				'separator' => 'none',
 			]
 		);
 
@@ -193,40 +219,6 @@ class Call_To_Action extends Base_Widget {
 		);
 
 		$this->add_control(
-			'icon_view',
-			[
-				'label' => esc_html__( 'View', 'elementor-pro' ),
-				'type' => Controls_Manager::SELECT,
-				'options' => [
-					'default' => esc_html__( 'Default', 'elementor-pro' ),
-					'stacked' => esc_html__( 'Stacked', 'elementor-pro' ),
-					'framed' => esc_html__( 'Framed', 'elementor-pro' ),
-				],
-				'default' => 'default',
-				'condition' => [
-					'graphic_element' => 'icon',
-				],
-			]
-		);
-
-		$this->add_control(
-			'icon_shape',
-			[
-				'label' => esc_html__( 'Shape', 'elementor-pro' ),
-				'type' => Controls_Manager::SELECT,
-				'options' => [
-					'circle' => esc_html__( 'Circle', 'elementor-pro' ),
-					'square' => esc_html__( 'Square', 'elementor-pro' ),
-				],
-				'default' => 'circle',
-				'condition' => [
-					'icon_view!' => 'default',
-					'graphic_element' => 'icon',
-				],
-			]
-		);
-
-		$this->add_control(
 			'title',
 			[
 				'label' => esc_html__( 'Title', 'elementor-pro' ),
@@ -238,21 +230,6 @@ class Call_To_Action extends Base_Widget {
 				'placeholder' => esc_html__( 'Enter your title', 'elementor-pro' ),
 				'label_block' => true,
 				'separator' => 'before',
-			]
-		);
-
-		$this->add_control(
-			'description',
-			[
-				'label' => esc_html__( 'Description', 'elementor-pro' ),
-				'type' => Controls_Manager::TEXTAREA,
-				'dynamic' => [
-					'active' => true,
-				],
-				'default' => esc_html__( 'Lorem ipsum dolor sit amet consectetur adipiscing elit dolor', 'elementor-pro' ),
-				'placeholder' => esc_html__( 'Enter your description', 'elementor-pro' ),
-				'separator' => 'none',
-				'rows' => 5,
 			]
 		);
 
@@ -279,6 +256,43 @@ class Call_To_Action extends Base_Widget {
 		);
 
 		$this->add_control(
+			'description',
+			[
+				'label' => esc_html__( 'Description', 'elementor-pro' ),
+				'type' => Controls_Manager::TEXTAREA,
+				'dynamic' => [
+					'active' => true,
+				],
+				'default' => esc_html__( 'Lorem ipsum dolor sit amet consectetur adipiscing elit dolor', 'elementor-pro' ),
+				'placeholder' => esc_html__( 'Enter your description', 'elementor-pro' ),
+				'separator' => 'before',
+				'rows' => 5,
+			]
+		);
+
+		$this->add_control(
+			'description_tag',
+			[
+				'label' => esc_html__( 'Description HTML Tag', 'elementor-pro' ),
+				'type' => Controls_Manager::SELECT,
+				'options' => [
+					'h1' => 'H1',
+					'h2' => 'H2',
+					'h3' => 'H3',
+					'h4' => 'H4',
+					'h5' => 'H5',
+					'h6' => 'H6',
+					'div' => 'div',
+					'span' => 'span',
+				],
+				'default' => 'div',
+				'condition' => [
+					'description!' => '',
+				],
+			]
+		);
+
+		$this->add_control(
 			'button',
 			[
 				'label' => esc_html__( 'Button Text', 'elementor-pro' ),
@@ -299,8 +313,6 @@ class Call_To_Action extends Base_Widget {
 				'dynamic' => [
 					'active' => true,
 				],
-				'placeholder' => esc_html__( 'https://your-link.com', 'elementor-pro' ),
-
 			]
 		);
 
@@ -314,7 +326,6 @@ class Call_To_Action extends Base_Widget {
 					'button' => esc_html__( 'Button Only', 'elementor-pro' ),
 				],
 				'default' => 'button',
-				'separator' => 'none',
 				'condition' => [
 					'link[url]!' => '',
 				],
@@ -337,6 +348,22 @@ class Call_To_Action extends Base_Widget {
 				'type' => Controls_Manager::TEXT,
 				'dynamic' => [
 					'active' => true,
+				],
+				'assets' => [
+					'styles' => [
+						[
+							'name' => 'e-ribbon',
+							'conditions' => [
+								'terms' => [
+									[
+										'name' => 'ribbon_title',
+										'operator' => '!==',
+										'value' => '',
+									],
+								],
+							],
+						],
+					],
 				],
 			]
 		);
@@ -383,6 +410,14 @@ class Call_To_Action extends Base_Widget {
 						'min' => 100,
 						'max' => 1000,
 					],
+					'em' => [
+						'min' => 10,
+						'max' => 100,
+					],
+					'rem' => [
+						'min' => 10,
+						'max' => 100,
+					],
 					'vh' => [
 						'min' => 10,
 						'max' => 100,
@@ -400,20 +435,25 @@ class Call_To_Action extends Base_Widget {
 				'label' => esc_html__( 'Alignment', 'elementor-pro' ),
 				'type' => Controls_Manager::CHOOSE,
 				'options' => [
-					'left' => [
-						'title' => esc_html__( 'Left', 'elementor-pro' ),
+					'start' => [
+						'title' => esc_html__( 'Start', 'elementor-pro' ),
 						'icon' => 'eicon-text-align-left',
 					],
 					'center' => [
 						'title' => esc_html__( 'Center', 'elementor-pro' ),
 						'icon' => 'eicon-text-align-center',
 					],
-					'right' => [
-						'title' => esc_html__( 'Right', 'elementor-pro' ),
+					'end' => [
+						'title' => esc_html__( 'End', 'elementor-pro' ),
 						'icon' => 'eicon-text-align-right',
 					],
 				],
 				'default' => 'center',
+				'classes' => 'elementor-control-start-end',
+				'selectors_dictionary' => [
+					'left' => is_rtl() ? 'end' : 'start',
+					'right' => is_rtl() ? 'start' : 'end',
+				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-cta__content' => 'text-align: {{VALUE}}',
 				],
@@ -440,7 +480,6 @@ class Call_To_Action extends Base_Widget {
 					],
 				],
 				'prefix_class' => 'elementor-cta--valign-',
-				'separator' => 'none',
 			]
 		);
 
@@ -477,12 +516,13 @@ class Call_To_Action extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 500,
 					],
-					'%' => [
-						'min' => 0,
-						'max' => 100,
+					'em' => [
+						'max' => 50,
+					],
+					'rem' => [
+						'max' => 50,
 					],
 				],
 				'selectors' => [
@@ -503,12 +543,13 @@ class Call_To_Action extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'vh', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 500,
 					],
-					'vh' => [
-						'min' => 0,
-						'max' => 100,
+					'em' => [
+						'max' => 50,
+					],
+					'rem' => [
+						'max' => 50,
 					],
 				],
 				'selectors' => [
@@ -544,8 +585,13 @@ class Call_To_Action extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -600,8 +646,13 @@ class Call_To_Action extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 200,
+					],
+					'em' => [
+						'max' => 20,
+					],
+					'rem' => [
+						'max' => 20,
 					],
 				],
 				'selectors' => [
@@ -614,6 +665,40 @@ class Call_To_Action extends Base_Widget {
 		);
 
 		$this->add_control(
+			'icon_view',
+			[
+				'label' => esc_html__( 'View', 'elementor-pro' ),
+				'type' => Controls_Manager::SELECT,
+				'options' => [
+					'default' => esc_html__( 'Default', 'elementor-pro' ),
+					'stacked' => esc_html__( 'Stacked', 'elementor-pro' ),
+					'framed' => esc_html__( 'Framed', 'elementor-pro' ),
+				],
+				'default' => 'default',
+				'condition' => [
+					'graphic_element' => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'icon_shape',
+			[
+				'label' => esc_html__( 'Shape', 'elementor-pro' ),
+				'type' => Controls_Manager::SELECT,
+				'options' => [
+					'circle' => esc_html__( 'Circle', 'elementor-pro' ),
+					'square' => esc_html__( 'Square', 'elementor-pro' ),
+				],
+				'default' => 'circle',
+				'condition' => [
+					'icon_view!' => 'default',
+					'graphic_element' => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
 			'icon_spacing',
 			[
 				'label' => esc_html__( 'Spacing', 'elementor-pro' ),
@@ -621,8 +706,13 @@ class Call_To_Action extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
@@ -682,6 +772,14 @@ class Call_To_Action extends Base_Widget {
 						'min' => 6,
 						'max' => 300,
 					],
+					'em' => [
+						'min' => 0.6,
+						'max' => 30,
+					],
+					'rem' => [
+						'min' => 0.6,
+						'max' => 30,
+					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-icon' => 'font-size: {{SIZE}}{{UNIT}};',
@@ -702,7 +800,14 @@ class Call_To_Action extends Base_Widget {
 					'{{WRAPPER}} .elementor-icon' => 'padding: {{SIZE}}{{UNIT}};',
 				],
 				'range' => [
+					'px' => [
+						'max' => 50,
+					],
 					'em' => [
+						'min' => 0,
+						'max' => 5,
+					],
+					'rem' => [
 						'min' => 0,
 						'max' => 5,
 					],
@@ -725,6 +830,9 @@ class Call_To_Action extends Base_Widget {
 						'max' => 20,
 					],
 					'em' => [
+						'max' => 2,
+					],
+					'rem' => [
 						'max' => 2,
 					],
 				],
@@ -808,6 +916,14 @@ class Call_To_Action extends Base_Widget {
 			Group_Control_Text_Stroke::get_type(),
 			[
 				'name' => 'text_stroke',
+				'selector' => '{{WRAPPER}} .elementor-cta__title',
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Text_Shadow::get_type(),
+			[
+				'name' => 'title_text_shadow',
 				'selector' => '{{WRAPPER}} .elementor-cta__title',
 			]
 		);
@@ -1028,13 +1144,16 @@ class Call_To_Action extends Base_Widget {
 			[
 				'label' => esc_html__( 'Size', 'elementor-pro' ),
 				'type' => Controls_Manager::SELECT,
-				'default' => 'sm',
 				'options' => [
 					'xs' => esc_html__( 'Extra Small', 'elementor-pro' ),
 					'sm' => esc_html__( 'Small', 'elementor-pro' ),
 					'md' => esc_html__( 'Medium', 'elementor-pro' ),
 					'lg' => esc_html__( 'Large', 'elementor-pro' ),
 					'xl' => esc_html__( 'Extra Large', 'elementor-pro' ),
+				],
+				'default' => 'sm',
+				'condition' => [
+					'button_size!' => 'sm', // a workaround to hide the control, unless it's in use (not default).
 				],
 			]
 		);
@@ -1047,6 +1166,14 @@ class Call_To_Action extends Base_Widget {
 				'global' => [
 					'default' => Global_Typography::TYPOGRAPHY_ACCENT,
 				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Text_Shadow::get_type(),
+			[
+				'name' => 'button_text_shadow',
+				'selector' => '{{WRAPPER}} .elementor-cta__button',
 			]
 		);
 
@@ -1150,6 +1277,9 @@ class Call_To_Action extends Base_Widget {
 					'em' => [
 						'max' => 2,
 					],
+					'rem' => [
+						'max' => 2,
+					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-cta__button' => 'border-width: {{SIZE}}{{UNIT}};',
@@ -1166,13 +1296,39 @@ class Call_To_Action extends Base_Widget {
 				'size_units' => [ 'px', '%', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 100,
+					],
+					'em' => [
+						'max' => 10,
+					],
+					'rem' => [
+						'max' => 10,
 					],
 				],
 				'selectors' => [
 					'{{WRAPPER}} .elementor-cta__button' => 'border-radius: {{SIZE}}{{UNIT}};',
 				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Box_Shadow::get_type(),
+			[
+				'name' => 'button_box_shadow',
+				'selector' => '{{WRAPPER}} .elementor-cta__button',
+			]
+		);
+
+		$this->add_responsive_control(
+			'button_padding',
+			[
+				'label' => esc_html__( 'Padding', 'elementor-pro' ),
+				'type' => Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em', 'rem', 'vw', 'custom' ],
+				'selectors' => [
+					'{{WRAPPER}} .elementor-cta__button' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+				'separator' => 'before',
 			]
 		);
 
@@ -1225,8 +1381,13 @@ class Call_To_Action extends Base_Widget {
 				'size_units' => [ 'px', 'em', 'rem', 'custom' ],
 				'range' => [
 					'px' => [
-						'min' => 0,
 						'max' => 50,
+					],
+					'em' => [
+						'max' => 5,
+					],
+					'em' => [
+						'max' => 5,
 					],
 				],
 				'selectors' => [
@@ -1361,6 +1522,7 @@ class Call_To_Action extends Base_Widget {
 					'px' => [
 						'min' => 0,
 						'max' => 3000,
+						'step' => 100,
 					],
 				],
 				'selectors' => [
@@ -1473,7 +1635,6 @@ class Call_To_Action extends Base_Widget {
 				'selectors' => [
 					'{{WRAPPER}} .elementor-cta__bg-overlay' => 'mix-blend-mode: {{VALUE}}',
 				],
-				'separator' => 'none',
 			]
 		);
 
@@ -1507,7 +1668,7 @@ class Call_To_Action extends Base_Widget {
 		$this->add_control(
 			'effect_duration',
 			[
-				'label' => esc_html__( 'Transition Duration', 'elementor-pro' ),
+				'label' => esc_html__( 'Transition Duration', 'elementor-pro' ) . ' (ms)',
 				'type' => Controls_Manager::SLIDER,
 				'render_type' => 'template',
 				'default' => [
@@ -1517,6 +1678,7 @@ class Call_To_Action extends Base_Widget {
 					'px' => [
 						'min' => 0,
 						'max' => 3000,
+						'step' => 100,
 					],
 				],
 				'selectors' => [
@@ -1538,6 +1700,8 @@ class Call_To_Action extends Base_Widget {
 
 		$wrapper_tag = 'div';
 		$button_tag = 'a';
+		$title_tag = Utils::validate_html_tag( $settings['title_tag'] );
+		$description_tag = Utils::validate_html_tag( $settings['description_tag'] );
 		$bg_image = '';
 		$content_animation = $settings['content_animation'];
 		$animation_class = '';
@@ -1560,20 +1724,14 @@ class Call_To_Action extends Base_Widget {
 
 		$this->add_render_attribute( 'wrapper', 'class', 'elementor-cta' );
 
-		$background_selector = "background-image: url($bg_image);";
-
-		$is_lazyload_active = Plugin::elementor()->experiments->is_feature_active( 'e_lazyload' );
-		$is_edit_mode = Plugin::elementor()->editor->is_edit_mode();
-
-		if ( $print_bg && ! $is_edit_mode && $is_lazyload_active ) {
-			$background_selector = "background-image: var(--e-bg-lazyload-loaded); --e-bg-lazyload: url($bg_image);";
-			$this->add_render_attribute( 'wrapper', 'data-e-bg-lazyload', '.elementor-bg' );
-		}
+		/*$this->add_render_attribute( 'background_image', 'style', [
+			'background-image: url(' . $bg_image . ');',
+		] );*/
 
 		$this->add_render_attribute(
 			'background_image',
 			[
-				'style' => $background_selector,
+				'style' => 'background-image: url(' . esc_url( $bg_image ) . ');',
 				'role' => 'img',
 				'aria-label' => Control_Media::get_image_alt( $settings['bg_image'] ),
 			]
@@ -1685,26 +1843,22 @@ class Call_To_Action extends Base_Widget {
 					</div>
 				<?php endif; ?>
 
-				<?php
-				if ( ! empty( $settings['title'] ) ) :
-					$title_tag = Utils::validate_html_tag( $settings['title_tag'] );
-
-					echo '<' . $title_tag . ' ' . $this->get_render_attribute_string( 'title' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					$this->print_unescaped_setting( 'title' );
-					echo '</' . $title_tag . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				endif;
-				?>
+				<?php if ( ! empty( $settings['title'] ) ) : ?>
+					<<?php Utils::print_validated_html_tag( $title_tag ); ?> <?php $this->print_render_attribute_string( 'title' ); ?>>
+						<?php echo wp_kses_post( $settings['title'] ); ?>
+					</<?php Utils::print_validated_html_tag( $title_tag ); ?>>
+				<?php endif; ?>
 
 				<?php if ( ! empty( $settings['description'] ) ) : ?>
-					<div <?php $this->print_render_attribute_string( 'description' ); ?>>
-						<?php $this->print_unescaped_setting( 'description' ); ?>
-					</div>
+					<<?php Utils::print_validated_html_tag( $description_tag ); ?> <?php $this->print_render_attribute_string( 'description' ); ?>>
+						<?php echo wp_kses_post( $settings['description'] ); ?>
+					</<?php Utils::print_validated_html_tag( $description_tag ); ?>>
 				<?php endif; ?>
 
 				<?php if ( ! empty( $settings['button'] ) ) : ?>
 					<div class="elementor-cta__button-wrapper elementor-cta__content-item elementor-content-item <?php echo esc_attr( $animation_class ); ?>">
 					<<?php Utils::print_validated_html_tag( $button_tag ); ?> <?php $this->print_render_attribute_string( 'button' ); ?>>
-						<?php $this->print_unescaped_setting( 'button' ); ?>
+						<?php echo wp_kses_post( $settings['button'] ); ?>
 					</<?php Utils::print_unescaped_internal_string( $button_tag ); ?>>
 					</div>
 				<?php endif; ?>
@@ -1714,12 +1868,17 @@ class Call_To_Action extends Base_Widget {
 		if ( ! empty( $settings['ribbon_title'] ) ) :
 			$this->add_render_attribute( 'ribbon-wrapper', 'class', 'elementor-ribbon' );
 
-			if ( ! empty( $settings['ribbon_horizontal_position'] ) ) {
+			if ( ! empty( $settings['ribbon_horizontal_position'] ) ) :
 				$this->add_render_attribute( 'ribbon-wrapper', 'class', 'elementor-ribbon-' . $settings['ribbon_horizontal_position'] );
-			}
+			endif;
+
+			$this->add_render_attribute( 'ribbon_title', 'class', 'elementor-ribbon-inner' );
+			$this->add_inline_editing_attributes( 'ribbon_title' );
 			?>
 			<div <?php $this->print_render_attribute_string( 'ribbon-wrapper' ); ?>>
-				<div class="elementor-ribbon-inner"><?php $this->print_unescaped_setting( 'ribbon_title' ); ?></div>
+				<div <?php $this->print_render_attribute_string( 'ribbon_title' ); ?>>
+					<?php echo wp_kses_post( $settings['ribbon_title'] ); ?>
+				</div>
 			</div>
 		<?php endif; ?>
 		</<?php Utils::print_validated_html_tag( $wrapper_tag ); ?>>
@@ -1739,6 +1898,8 @@ class Call_To_Action extends Base_Widget {
 		<#
 			var wrapperTag = 'div',
 				buttonTag = 'a',
+				titleTag = elementor.helpers.validateHTMLTag( settings.title_tag ),
+				descriptionTag = elementor.helpers.validateHTMLTag( settings.description_tag ),
 				contentAnimation = settings.content_animation,
 				animationClass,
 				btnSizeClass = 'elementor-size-' + settings.button_size,
@@ -1851,29 +2012,32 @@ class Call_To_Action extends Base_Widget {
 					</div>
 				<# } #>
 				<# if ( settings.title ) { #>
-					<# var titleTag = elementor.helpers.validateHTMLTag( settings.title_tag ) #>
-					<{{ titleTag }} {{{ view.getRenderAttributeString( 'title' ) }}}>{{{ settings.title }}}</{{ titleTag }}>
+					<{{ titleTag }} {{{ view.getRenderAttributeString( 'title' ) }}}>{{ settings.title }}</{{ titleTag }}>
 				<# } #>
 
 				<# if ( settings.description ) { #>
-					<div {{{ view.getRenderAttributeString( 'description' ) }}}>{{{ settings.description }}}</div>
+					<{{ descriptionTag }} {{{ view.getRenderAttributeString( 'description' ) }}}>{{ settings.description }}</{{ descriptionTag }}>
 				<# } #>
 
 				<# if ( settings.button ) { #>
 					<div class="elementor-cta__button-wrapper elementor-cta__content-item elementor-content-item {{ animationClass }}">
-						<{{ buttonTag }} href="#" {{{ view.getRenderAttributeString( 'button' ) }}}>{{{ settings.button }}}</{{ buttonTag }}>
+						<{{ buttonTag }} href="#" {{{ view.getRenderAttributeString( 'button' ) }}}>{{ settings.button }}</{{ buttonTag }}>
 					</div>
 				<# } #>
 			</div>
 		<# } #>
 		<# if ( settings.ribbon_title ) {
-			var ribbonClasses = 'elementor-ribbon';
+			view.addRenderAttribute( 'ribbon', 'class', 'elementor-ribbon' );
 
 			if ( settings.ribbon_horizontal_position ) {
-				ribbonClasses += ' elementor-ribbon-' + settings.ribbon_horizontal_position;
-			} #>
-			<div class="{{ ribbonClasses }}">
-				<div class="elementor-ribbon-inner">{{{ settings.ribbon_title }}}</div>
+				view.addRenderAttribute( 'ribbon', 'class', 'elementor-ribbon-' + settings.ribbon_horizontal_position );
+			}
+
+			view.addRenderAttribute( 'ribbon_title', 'class', 'elementor-ribbon-inner' );
+			view.addInlineEditingAttributes( 'ribbon_title' );
+			#>
+			<div {{{ view.getRenderAttributeString( 'ribbon' ) }}}>
+				<div {{{ view.getRenderAttributeString( 'ribbon_title' ) }}}>{{ settings.ribbon_title }}</div>
 			</div>
 		<# } #>
 		</{{ wrapperTag }}>

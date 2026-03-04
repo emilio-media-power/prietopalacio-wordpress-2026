@@ -1,4 +1,4 @@
-/*! elementor-pro - v3.13.1 - 11-05-2023 */
+/*! elementor-pro - v3.35.0 - 11-02-2026 */
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
@@ -11,24 +11,24 @@
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "Link": () => (/* binding */ Link),
-/* harmony export */   "Location": () => (/* binding */ Location),
-/* harmony export */   "LocationProvider": () => (/* binding */ LocationProvider),
-/* harmony export */   "Match": () => (/* binding */ Match),
-/* harmony export */   "Redirect": () => (/* binding */ Redirect),
-/* harmony export */   "Router": () => (/* binding */ Router),
-/* harmony export */   "ServerLocation": () => (/* binding */ ServerLocation),
-/* harmony export */   "createHistory": () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.createHistory),
-/* harmony export */   "createMemorySource": () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.createMemorySource),
-/* harmony export */   "globalHistory": () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.globalHistory),
-/* harmony export */   "isRedirect": () => (/* binding */ isRedirect),
-/* harmony export */   "matchPath": () => (/* reexport safe */ _lib_utils__WEBPACK_IMPORTED_MODULE_4__.match),
-/* harmony export */   "navigate": () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.navigate),
-/* harmony export */   "redirectTo": () => (/* binding */ redirectTo),
-/* harmony export */   "useLocation": () => (/* binding */ useLocation),
-/* harmony export */   "useMatch": () => (/* binding */ useMatch),
-/* harmony export */   "useNavigate": () => (/* binding */ useNavigate),
-/* harmony export */   "useParams": () => (/* binding */ useParams)
+/* harmony export */   Link: () => (/* binding */ Link),
+/* harmony export */   Location: () => (/* binding */ Location),
+/* harmony export */   LocationProvider: () => (/* binding */ LocationProvider),
+/* harmony export */   Match: () => (/* binding */ Match),
+/* harmony export */   Redirect: () => (/* binding */ Redirect),
+/* harmony export */   Router: () => (/* binding */ Router),
+/* harmony export */   ServerLocation: () => (/* binding */ ServerLocation),
+/* harmony export */   createHistory: () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.createHistory),
+/* harmony export */   createMemorySource: () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.createMemorySource),
+/* harmony export */   globalHistory: () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.globalHistory),
+/* harmony export */   isRedirect: () => (/* binding */ isRedirect),
+/* harmony export */   matchPath: () => (/* reexport safe */ _lib_utils__WEBPACK_IMPORTED_MODULE_4__.match),
+/* harmony export */   navigate: () => (/* reexport safe */ _lib_history__WEBPACK_IMPORTED_MODULE_5__.navigate),
+/* harmony export */   redirectTo: () => (/* binding */ redirectTo),
+/* harmony export */   useLocation: () => (/* binding */ useLocation),
+/* harmony export */   useMatch: () => (/* binding */ useMatch),
+/* harmony export */   useNavigate: () => (/* binding */ useNavigate),
+/* harmony export */   useParams: () => (/* binding */ useParams)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
@@ -36,7 +36,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var invariant__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! invariant */ "../node_modules/invariant/browser.js");
 /* harmony import */ var invariant__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(invariant__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var create_react_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! create-react-context */ "../node_modules/create-react-context/lib/index.js");
+/* harmony import */ var create_react_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! create-react-context */ "../node_modules/@reach/router/node_modules/create-react-context/lib/index.js");
 /* harmony import */ var create_react_context__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(create_react_context__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var react_lifecycles_compat__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-lifecycles-compat */ "../node_modules/react-lifecycles-compat/react-lifecycles-compat.es.js");
 /* harmony import */ var _lib_utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./lib/utils */ "../node_modules/@reach/router/es/lib/utils.js");
@@ -180,7 +180,7 @@ LocationProvider.defaultProps = {
   history: _lib_history__WEBPACK_IMPORTED_MODULE_5__.globalHistory
 };
  true ? LocationProvider.propTypes = {
-  history: (prop_types__WEBPACK_IMPORTED_MODULE_6___default().object.isRequired)
+  history: (prop_types__WEBPACK_IMPORTED_MODULE_6___default().object).isRequired
 } : 0;
 var ServerLocation = function ServerLocation(_ref2) {
   var url = _ref2.url,
@@ -539,7 +539,7 @@ var Link = forwardRef(function (_ref4, ref) {
 Link.displayName = "Link";
 
  true ? Link.propTypes = {
-  to: (prop_types__WEBPACK_IMPORTED_MODULE_6___default().string.isRequired)
+  to: (prop_types__WEBPACK_IMPORTED_MODULE_6___default().string).isRequired
 } : 0;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -621,7 +621,7 @@ var Redirect = function Redirect(props) {
 
  true ? Redirect.propTypes = {
   from: (prop_types__WEBPACK_IMPORTED_MODULE_6___default().string),
-  to: (prop_types__WEBPACK_IMPORTED_MODULE_6___default().string.isRequired)
+  to: (prop_types__WEBPACK_IMPORTED_MODULE_6___default().string).isRequired
 } : 0;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -768,10 +768,10 @@ var shouldNavigate = function shouldNavigate(event) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "createHistory": () => (/* binding */ createHistory),
-/* harmony export */   "createMemorySource": () => (/* binding */ createMemorySource),
-/* harmony export */   "globalHistory": () => (/* binding */ globalHistory),
-/* harmony export */   "navigate": () => (/* binding */ navigate)
+/* harmony export */   createHistory: () => (/* binding */ createHistory),
+/* harmony export */   createMemorySource: () => (/* binding */ createMemorySource),
+/* harmony export */   globalHistory: () => (/* binding */ globalHistory),
+/* harmony export */   navigate: () => (/* binding */ navigate)
 /* harmony export */ });
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -968,13 +968,13 @@ var navigate = globalHistory.navigate;
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "insertParams": () => (/* binding */ insertParams),
-/* harmony export */   "match": () => (/* binding */ match),
-/* harmony export */   "pick": () => (/* binding */ pick),
-/* harmony export */   "resolve": () => (/* binding */ resolve),
-/* harmony export */   "shallowCompare": () => (/* binding */ shallowCompare),
-/* harmony export */   "startsWith": () => (/* binding */ startsWith),
-/* harmony export */   "validateRedirect": () => (/* binding */ validateRedirect)
+/* harmony export */   insertParams: () => (/* binding */ insertParams),
+/* harmony export */   match: () => (/* binding */ match),
+/* harmony export */   pick: () => (/* binding */ pick),
+/* harmony export */   resolve: () => (/* binding */ resolve),
+/* harmony export */   shallowCompare: () => (/* binding */ shallowCompare),
+/* harmony export */   startsWith: () => (/* binding */ startsWith),
+/* harmony export */   validateRedirect: () => (/* binding */ validateRedirect)
 /* harmony export */ });
 /* harmony import */ var invariant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! invariant */ "../node_modules/invariant/browser.js");
 /* harmony import */ var invariant__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(invariant__WEBPACK_IMPORTED_MODULE_0__);
@@ -1264,6 +1264,238 @@ var shallowCompare = function shallowCompare(obj1, obj2) {
 
 /***/ }),
 
+/***/ "../node_modules/@reach/router/node_modules/create-react-context/lib/implementation.js":
+/*!*********************************************************************************************!*\
+  !*** ../node_modules/@reach/router/node_modules/create-react-context/lib/implementation.js ***!
+  \*********************************************************************************************/
+/***/ ((module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _react = __webpack_require__(/*! react */ "react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js");
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _gud = __webpack_require__(/*! gud */ "../node_modules/gud/index.js");
+
+var _gud2 = _interopRequireDefault(_gud);
+
+var _warning = __webpack_require__(/*! warning */ "../node_modules/warning/warning.js");
+
+var _warning2 = _interopRequireDefault(_warning);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var MAX_SIGNED_31_BIT_INT = 1073741823;
+
+// Inlined Object.is polyfill.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+function objectIs(x, y) {
+  if (x === y) {
+    return x !== 0 || 1 / x === 1 / y;
+  } else {
+    return x !== x && y !== y;
+  }
+}
+
+function createEventEmitter(value) {
+  var handlers = [];
+  return {
+    on: function on(handler) {
+      handlers.push(handler);
+    },
+    off: function off(handler) {
+      handlers = handlers.filter(function (h) {
+        return h !== handler;
+      });
+    },
+    get: function get() {
+      return value;
+    },
+    set: function set(newValue, changedBits) {
+      value = newValue;
+      handlers.forEach(function (handler) {
+        return handler(value, changedBits);
+      });
+    }
+  };
+}
+
+function onlyChild(children) {
+  return Array.isArray(children) ? children[0] : children;
+}
+
+function createReactContext(defaultValue, calculateChangedBits) {
+  var _Provider$childContex, _Consumer$contextType;
+
+  var contextProp = '__create-react-context-' + (0, _gud2.default)() + '__';
+
+  var Provider = function (_Component) {
+    _inherits(Provider, _Component);
+
+    function Provider() {
+      var _temp, _this, _ret;
+
+      _classCallCheck(this, Provider);
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _ret = (_temp = (_this = _possibleConstructorReturn(this, _Component.call.apply(_Component, [this].concat(args))), _this), _this.emitter = createEventEmitter(_this.props.value), _temp), _possibleConstructorReturn(_this, _ret);
+    }
+
+    Provider.prototype.getChildContext = function getChildContext() {
+      var _ref;
+
+      return _ref = {}, _ref[contextProp] = this.emitter, _ref;
+    };
+
+    Provider.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
+      if (this.props.value !== nextProps.value) {
+        var oldValue = this.props.value;
+        var newValue = nextProps.value;
+        var changedBits = void 0;
+
+        if (objectIs(oldValue, newValue)) {
+          changedBits = 0; // No change
+        } else {
+          changedBits = typeof calculateChangedBits === 'function' ? calculateChangedBits(oldValue, newValue) : MAX_SIGNED_31_BIT_INT;
+          if (true) {
+            (0, _warning2.default)((changedBits & MAX_SIGNED_31_BIT_INT) === changedBits, 'calculateChangedBits: Expected the return value to be a ' + '31-bit integer. Instead received: %s', changedBits);
+          }
+
+          changedBits |= 0;
+
+          if (changedBits !== 0) {
+            this.emitter.set(nextProps.value, changedBits);
+          }
+        }
+      }
+    };
+
+    Provider.prototype.render = function render() {
+      return this.props.children;
+    };
+
+    return Provider;
+  }(_react.Component);
+
+  Provider.childContextTypes = (_Provider$childContex = {}, _Provider$childContex[contextProp] = _propTypes2.default.object.isRequired, _Provider$childContex);
+
+  var Consumer = function (_Component2) {
+    _inherits(Consumer, _Component2);
+
+    function Consumer() {
+      var _temp2, _this2, _ret2;
+
+      _classCallCheck(this, Consumer);
+
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
+      }
+
+      return _ret2 = (_temp2 = (_this2 = _possibleConstructorReturn(this, _Component2.call.apply(_Component2, [this].concat(args))), _this2), _this2.state = {
+        value: _this2.getValue()
+      }, _this2.onUpdate = function (newValue, changedBits) {
+        var observedBits = _this2.observedBits | 0;
+        if ((observedBits & changedBits) !== 0) {
+          _this2.setState({ value: _this2.getValue() });
+        }
+      }, _temp2), _possibleConstructorReturn(_this2, _ret2);
+    }
+
+    Consumer.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
+      var observedBits = nextProps.observedBits;
+
+      this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+      : observedBits;
+    };
+
+    Consumer.prototype.componentDidMount = function componentDidMount() {
+      if (this.context[contextProp]) {
+        this.context[contextProp].on(this.onUpdate);
+      }
+      var observedBits = this.props.observedBits;
+
+      this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
+      : observedBits;
+    };
+
+    Consumer.prototype.componentWillUnmount = function componentWillUnmount() {
+      if (this.context[contextProp]) {
+        this.context[contextProp].off(this.onUpdate);
+      }
+    };
+
+    Consumer.prototype.getValue = function getValue() {
+      if (this.context[contextProp]) {
+        return this.context[contextProp].get();
+      } else {
+        return defaultValue;
+      }
+    };
+
+    Consumer.prototype.render = function render() {
+      return onlyChild(this.props.children)(this.state.value);
+    };
+
+    return Consumer;
+  }(_react.Component);
+
+  Consumer.contextTypes = (_Consumer$contextType = {}, _Consumer$contextType[contextProp] = _propTypes2.default.object, _Consumer$contextType);
+
+
+  return {
+    Provider: Provider,
+    Consumer: Consumer
+  };
+}
+
+exports["default"] = createReactContext;
+module.exports = exports['default'];
+
+/***/ }),
+
+/***/ "../node_modules/@reach/router/node_modules/create-react-context/lib/index.js":
+/*!************************************************************************************!*\
+  !*** ../node_modules/@reach/router/node_modules/create-react-context/lib/index.js ***!
+  \************************************************************************************/
+/***/ ((module, exports, __webpack_require__) => {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _react = __webpack_require__(/*! react */ "react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _implementation = __webpack_require__(/*! ./implementation */ "../node_modules/@reach/router/node_modules/create-react-context/lib/implementation.js");
+
+var _implementation2 = _interopRequireDefault(_implementation);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports["default"] = _react2.default.createContext || _implementation2.default;
+module.exports = exports['default'];
+
+/***/ }),
+
 /***/ "../modules/forms/submissions/assets/js/admin/app.js":
 /*!***********************************************************!*\
   !*** ../modules/forms/submissions/assets/js/admin/app.js ***!
@@ -1319,7 +1551,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.BulkActionSelect = BulkActionSelect;
 var _react = _interopRequireDefault(__webpack_require__(/*! react */ "react"));
-var _propTypes = _interopRequireDefault(__webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js"));
+var PropTypes = _interopRequireWildcard(__webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js"));
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const {
   useState,
   useCallback
@@ -1360,11 +1594,11 @@ function BulkActionSelect(props) {
   }));
 }
 BulkActionSelect.propTypes = {
-  className: _propTypes.default.string,
-  actions: _propTypes.default.arrayOf(_propTypes.default.shape({
-    label: _propTypes.default.string.isRequired,
-    value: _propTypes.default.string.isRequired,
-    onApply: _propTypes.default.func.isRequired
+  className: PropTypes.string,
+  actions: PropTypes.arrayOf(PropTypes.shape({
+    label: PropTypes.string.isRequired,
+    value: PropTypes.string.isRequired,
+    onApply: PropTypes.func.isRequired
   })).isRequired
 };
 BulkActionSelect.defaultProps = {
@@ -1388,7 +1622,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = Bulk;
 var _react = _interopRequireDefault(__webpack_require__(/*! react */ "react"));
-var _propTypes = _interopRequireDefault(__webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js"));
+var PropTypes = _interopRequireWildcard(__webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js"));
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const {
   useCallback
 } = _react.default;
@@ -1404,9 +1640,9 @@ function Bulk(props) {
   });
 }
 Bulk.propTypes = {
-  checkedGroup: _propTypes.default.array.isRequired,
-  allValues: _propTypes.default.array.isRequired,
-  onChange: _propTypes.default.func.isRequired
+  checkedGroup: PropTypes.array.isRequired,
+  allValues: PropTypes.array.isRequired,
+  onChange: PropTypes.func.isRequired
 };
 
 /***/ }),
@@ -1427,7 +1663,9 @@ Object.defineProperty(exports, "__esModule", ({
 exports["default"] = Checkbox;
 var _react = _interopRequireDefault(__webpack_require__(/*! react */ "react"));
 var _bulk = _interopRequireDefault(__webpack_require__(/*! ./bulk */ "../modules/forms/submissions/assets/js/admin/components/checkbox/bulk.js"));
-var _propTypes = _interopRequireDefault(__webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js"));
+var PropTypes = _interopRequireWildcard(__webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js"));
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const {
   useCallback
 } = _react.default;
@@ -1443,9 +1681,9 @@ function Checkbox(props) {
   });
 }
 Checkbox.propTypes = {
-  checkedGroup: _propTypes.default.array.isRequired,
-  value: _propTypes.default.number.isRequired,
-  onChange: _propTypes.default.func.isRequired
+  checkedGroup: PropTypes.array.isRequired,
+  value: PropTypes.number.isRequired,
+  onChange: PropTypes.func.isRequired
 };
 Checkbox.Bulk = _bulk.default;
 
@@ -1544,12 +1782,11 @@ function DateFilter(props) {
   }, [options, props.value, forceCustomSelect]);
 
   // On select changed.
-  const onSelectChanged = useCallback(_ref => {
-    let {
-      target: {
-        value
-      }
-    } = _ref;
+  const onSelectChanged = useCallback(({
+    target: {
+      value
+    }
+  }) => {
     const selected = options.find(option => option.value === value);
     setForceCustomSelect('custom' === selected.value);
     props.onChange(selected.filter);
@@ -1569,11 +1806,10 @@ function DateFilter(props) {
     id: `filter-by-${props.name}`,
     value: selectedValue,
     onChange: onSelectChanged
-  }, options.map(_ref2 => {
-    let {
-      value,
-      label
-    } = _ref2;
+  }, options.map(({
+    value,
+    label
+  }) => {
     return /*#__PURE__*/_react.default.createElement("option", {
       key: value,
       value: value
@@ -1582,30 +1818,24 @@ function DateFilter(props) {
     type: "date",
     "aria-label": __('Start Date', 'elementor-pro'),
     value: props.value.after || '',
-    onChange: _ref3 => {
-      let {
-        target: {
-          value
-        }
-      } = _ref3;
-      return onDateInputChanged({
-        after: value
-      });
-    }
+    onChange: ({
+      target: {
+        value
+      }
+    }) => onDateInputChanged({
+      after: value
+    })
   }), "\xA0 - \xA0", /*#__PURE__*/_react.default.createElement("input", {
     type: "date",
     "aria-label": __('End Date', 'elementor-pro'),
     value: props.value.before || '',
-    onChange: _ref4 => {
-      let {
-        target: {
-          value
-        }
-      } = _ref4;
-      return onDateInputChanged({
-        before: value
-      });
-    }
+    onChange: ({
+      target: {
+        value
+      }
+    }) => onDateInputChanged({
+      before: value
+    })
   })));
 }
 DateFilter.propTypes = {
@@ -1766,8 +1996,8 @@ exports["default"] = Link;
 var _react = _interopRequireWildcard(__webpack_require__(/*! react */ "react"));
 var _extends2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/extends */ "../node_modules/@babel/runtime/helpers/extends.js"));
 var _router = __webpack_require__(/*! @reach/router */ "../node_modules/@reach/router/es/index.js");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function Link(props) {
   const ref = (0, _react.useRef)();
   (0, _react.useEffect)(() => {
@@ -1955,7 +2185,7 @@ const {
  * @see https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Web_Localizability/Creating_localizable_web_applications#D'ont_use_text_as_decoration
  *
  * @param {any} props
- * @return {JSX.Element|string} -
+ * @return {JSX.Element|string} Element
  * @class
  */
 function Pagination(props) {
@@ -2080,12 +2310,11 @@ function renderSelect2(el, onChange) {
     dir: elementorCommon.config.isRTL ? 'rtl' : 'ltr',
     ajax: {
       delay: 400,
-      transport(_ref, success, failure) {
-        let {
-          data: {
-            search
-          }
-        } = _ref;
+      transport({
+        data: {
+          search
+        }
+      }, success, failure) {
         return $e.data.get('form-submissions/referer', {
           search
         }, {
@@ -2097,21 +2326,17 @@ function renderSelect2(el, onChange) {
           search: params.term
         };
       },
-      processResults(_ref2) {
-        let {
-          data
-        } = _ref2;
+      processResults({
+        data
+      }) {
         return {
-          results: data.data.map(_ref3 => {
-            let {
-              value,
-              label
-            } = _ref3;
-            return {
-              id: encodeURIComponent(value),
-              text: label
-            };
-          })
+          results: data.data.map(({
+            value,
+            label
+          }) => ({
+            id: encodeURIComponent(value),
+            text: label
+          }))
         };
       },
       cache: true
@@ -2134,12 +2359,9 @@ function RefererFilter(props) {
         value: props.value
       }, {
         refresh: true
-      }).then(_ref4 => {
-        let {
-          data
-        } = _ref4;
-        return setOptions(prev => [...prev, ...data.data]);
-      }).then(() => $select2 = renderSelect2(ref.current, props.onChange));
+      }).then(({
+        data
+      }) => setOptions(prev => [...prev, ...data.data])).then(() => $select2 = renderSelect2(ref.current, props.onChange));
     } else {
       $select2 = renderSelect2(ref.current, props.onChange);
     }
@@ -2157,11 +2379,10 @@ function RefererFilter(props) {
     ref: ref,
     id: "filter-by-referer",
     value: props.value
-  }, options.map(_ref5 => {
-    let {
-      value,
-      label
-    } = _ref5;
+  }, options.map(({
+    value,
+    label
+  }) => {
     return /*#__PURE__*/_react.default.createElement("option", {
       key: value,
       value: encodeURIComponent(value)
@@ -2212,11 +2433,10 @@ function ResourceFilter(props) {
     id: `filter-by-${props.name}`,
     value: props.value,
     onChange: e => props.onChange(e.target.value)
-  }, [...props.options, ...localOptions].map(_ref => {
-    let {
-      value,
-      label
-    } = _ref;
+  }, [...props.options, ...localOptions].map(({
+    value,
+    label
+  }) => {
     return /*#__PURE__*/_react.default.createElement("option", {
       key: value,
       value: value
@@ -2276,7 +2496,7 @@ const DEFAULT_DEBOUNCE_TIMEOUT = 600;
  * Third render - the user type and the debounce get activate, and then it send the value up in the component tree.
  *
  * @param {any} props
- * @return {JSX.Element} -
+ * @return {JSX.Element} Element
  * @class
  */
 function SearchBox(props) {
@@ -2432,21 +2652,25 @@ const {
 function Acceptance(props) {
   const [localValue, setLocalValue] = useState(props.value),
     id = props.field.id + '-' + props.value;
-  return /*#__PURE__*/_react.default.createElement("label", {
-    className: "e-form-submissions-value-label",
-    htmlFor: id
-  }, /*#__PURE__*/_react.default.createElement("input", {
-    id: id,
-    type: "checkbox",
-    value: "on",
-    checked: props.isEditMode ? 'on' === localValue : 'on' === props.value,
-    onChange: e => {
-      const value = e.target.checked ? 'on' : '';
-      setLocalValue(value);
-      props.onChange(value);
-    },
-    disabled: !props.isEditMode
-  }));
+  return (
+    /*#__PURE__*/
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control
+    _react.default.createElement("label", {
+      className: "e-form-submissions-value-label",
+      htmlFor: id
+    }, /*#__PURE__*/_react.default.createElement("input", {
+      id: id,
+      type: "checkbox",
+      value: "on",
+      checked: props.isEditMode ? 'on' === localValue : 'on' === props.value,
+      onChange: e => {
+        const value = e.target.checked ? 'on' : '';
+        setLocalValue(value);
+        props.onChange(value);
+      },
+      disabled: !props.isEditMode
+    }))
+  );
 }
 Acceptance.propTypes = {
   ..._index.basePropTypes
@@ -2624,14 +2848,11 @@ const components = Object.entries({
   Time: _time.default,
   Textarea: _textarea.default,
   Text: _text.default
-}).reduce((current, _ref) => {
-  let [key, component] = _ref;
-  return {
-    ...current,
-    [key.toLowerCase()]: component
-  };
-}, {});
-const basePropTypes = {
+}).reduce((current, [key, component]) => ({
+  ...current,
+  [key.toLowerCase()]: component
+}), {});
+const basePropTypes = exports.basePropTypes = {
   value: PropTypes.string,
   isEditMode: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
@@ -2642,7 +2863,6 @@ const basePropTypes = {
     is_multiple: PropTypes.bool
   })
 };
-exports.basePropTypes = basePropTypes;
 function SubmissionValue(props) {
   const Component = useMemo(() => {
     const key = props.field?.type;
@@ -2826,12 +3046,11 @@ function Text(props) {
   return props.isEditMode ? /*#__PURE__*/_react.default.createElement("input", {
     type: inputType,
     value: localValue,
-    onChange: _ref => {
-      let {
-        target: {
-          value
-        }
-      } = _ref;
+    onChange: ({
+      target: {
+        value
+      }
+    }) => {
       setLocalValue(value);
       props.onChange(value);
     }
@@ -2920,6 +3139,7 @@ Time.propTypes = {
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
+/* provided dependency */ var __ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n")["__"];
 
 
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ "../node_modules/@babel/runtime/helpers/interopRequireDefault.js");
@@ -2931,6 +3151,11 @@ var _react = _interopRequireDefault(__webpack_require__(/*! react */ "react"));
 var _index = __webpack_require__(/*! ./index */ "../modules/forms/submissions/assets/js/admin/components/submission-value/index.js");
 function Upload(props) {
   const value = props.value.split(' , ');
+  const isAttached = 'attached' === value[0];
+  if (isAttached) {
+    const message = value.length > 1 ? __("Attachments to email won't be saved.", 'elementor-pro') : __("Attachment to email won't be saved.", 'elementor-pro');
+    return /*#__PURE__*/_react.default.createElement("span", null, message);
+  }
   return value.map(path => /*#__PURE__*/_react.default.createElement("div", {
     key: path
   }, /*#__PURE__*/_react.default.createElement("a", {
@@ -3309,10 +3534,8 @@ const {
   useCallback,
   useContext
 } = _react.default;
-const NOTICE_TYPE_SUCCESS = 'success';
-exports.NOTICE_TYPE_SUCCESS = NOTICE_TYPE_SUCCESS;
-const NOTICE_TYPE_ERROR = 'error';
-exports.NOTICE_TYPE_ERROR = NOTICE_TYPE_ERROR;
+const NOTICE_TYPE_SUCCESS = exports.NOTICE_TYPE_SUCCESS = 'success';
+const NOTICE_TYPE_ERROR = exports.NOTICE_TYPE_ERROR = 'error';
 const NoticesContext = createContext({
   notices: []
 });
@@ -3320,7 +3543,7 @@ const NoticesContext = createContext({
 /**
  * Use Notifications context.
  *
- * @return {{}} -
+ * @return {{}} Notices context
  */
 function useNoticesContext() {
   return useContext(NoticesContext);
@@ -3330,7 +3553,7 @@ function useNoticesContext() {
  * Notification Provider.
  *
  * @param {any} props
- * @return {JSX.Element} -
+ * @return {JSX.Element} Element
  * @class
  */
 function NoticesProvider(props) {
@@ -3342,13 +3565,12 @@ function NoticesProvider(props) {
   }, []);
 
   // Add notification (show in view).
-  const notify = useCallback(_ref => {
-    let {
-      message,
-      undoAction,
-      type,
-      dismissible = true
-    } = _ref;
+  const notify = useCallback(({
+    message,
+    undoAction,
+    type,
+    dismissible = true
+  }) => {
     if (!message) {
       return;
     }
@@ -3427,7 +3649,7 @@ const SettingsContext = createContext({});
 /**
  * Consume the context
  *
- * @return {{emptyTrashDays: number}} -
+ * @return {{emptyTrashDays: number}} Settings context
  */
 function useSettingsContext() {
   return useContext(SettingsContext);
@@ -3437,7 +3659,7 @@ function useSettingsContext() {
  * Settings Provider
  *
  * @param {any} props
- * @return {JSX.Element} -
+ * @return {JSX.Element} Element
  * @class
  */
 function SettingsProvider(props) {
@@ -3600,8 +3822,8 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = void 0;
 var dataCommands = _interopRequireWildcard(__webpack_require__(/*! ./commands */ "../modules/forms/submissions/assets/js/admin/data/commands/index.js"));
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 class Component extends $e.modules.ComponentBase {
   getNamespace() {
     return 'form-submissions';
@@ -3628,8 +3850,8 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = void 0;
 var dataCommands = _interopRequireWildcard(__webpack_require__(/*! ./commands/forms-index */ "../modules/forms/submissions/assets/js/admin/data/commands/forms-index.js"));
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 class FormsComponent extends $e.modules.ComponentBase {
   static namespace = 'forms';
   getNamespace() {
@@ -3664,31 +3886,23 @@ const {
   useState,
   useMemo
 } = React;
-const STATUS_IDLE = 'idle';
-exports.STATUS_IDLE = STATUS_IDLE;
-const STATUS_LOADING = 'loading';
-exports.STATUS_LOADING = STATUS_LOADING;
-const STATUS_SUCCESS = 'success';
-exports.STATUS_SUCCESS = STATUS_SUCCESS;
-const STATUS_ERROR = 'error';
-exports.STATUS_ERROR = STATUS_ERROR;
-function useDataAction(action) {
-  let deps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+const STATUS_IDLE = exports.STATUS_IDLE = 'idle';
+const STATUS_LOADING = exports.STATUS_LOADING = 'loading';
+const STATUS_SUCCESS = exports.STATUS_SUCCESS = 'success';
+const STATUS_ERROR = exports.STATUS_ERROR = 'error';
+function useDataAction(action, deps = []) {
   const abortControllerRef = useRef();
   const [status, setStatus] = useState(STATUS_IDLE);
 
   // To avoid multiple declaration of the action callback, it memorize the argument that SHOULD
   // trigger a new declaration of the action callback.
   const calculatedDeps = useMemo(() => [...deps, status], [deps, status]);
-  const wrappedAction = useCallback(function () {
+  const wrappedAction = useCallback((...args) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     abortControllerRef.current = new AbortController();
     setStatus(STATUS_LOADING);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
     return action(args, {
       abortController: abortControllerRef.current,
       status
@@ -3727,14 +3941,11 @@ exports.useExport = useExport;
 var _useDataAction = _interopRequireWildcard(__webpack_require__(/*! ./use-data-action */ "../modules/forms/submissions/assets/js/admin/hooks/use-data-action.js"));
 var _downloadBlob = _interopRequireDefault(__webpack_require__(/*! ../utils/download-blob */ "../modules/forms/submissions/assets/js/admin/utils/download-blob.js"));
 var _noticesContext = __webpack_require__(/*! ../context/notices-context */ "../modules/forms/submissions/assets/js/admin/context/notices-context.js");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-const EXPORT_MODE_ALL = 'all';
-exports.EXPORT_MODE_ALL = EXPORT_MODE_ALL;
-const EXPORT_MODE_SELECTED = 'selected';
-exports.EXPORT_MODE_SELECTED = EXPORT_MODE_SELECTED;
-const EXPORT_MODE_FILTERED = 'filtered';
-exports.EXPORT_MODE_FILTERED = EXPORT_MODE_FILTERED;
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const EXPORT_MODE_ALL = exports.EXPORT_MODE_ALL = 'all';
+const EXPORT_MODE_SELECTED = exports.EXPORT_MODE_SELECTED = 'selected';
+const EXPORT_MODE_FILTERED = exports.EXPORT_MODE_FILTERED = 'filtered';
 const {
   useState,
   useMemo
@@ -3752,7 +3963,7 @@ const defaultOptions = {
  * Export functionality
  *
  * @param {any} hookOptions
- * @return {(any|{mode: (string), progress: {success: number, count: number}, status: string})[]} -
+ * @return {(any|{mode: (string), progress: {success: number, count: number}, status: string})[]} [ exportSubmissions, { mode, progress, status: exportStatus } ]
  */
 function useExport(hookOptions) {
   const options = useMemo(() => ({
@@ -3770,10 +3981,7 @@ function useExport(hookOptions) {
     if (options.checked.length > 0) {
       return EXPORT_MODE_SELECTED;
     }
-    const filter = Object.fromEntries(Object.entries(options.filter).filter(_ref => {
-      let [, value] = _ref;
-      return value;
-    }));
+    const filter = Object.fromEntries(Object.entries(options.filter).filter(([, value]) => value));
     if (1 === Object.keys(filter).length && 'all' === filter.status) {
       return EXPORT_MODE_ALL;
     }
@@ -3781,12 +3989,10 @@ function useExport(hookOptions) {
   }, [options.checked, options.filter]);
   const [exportSubmissions, {
     status: exportStatus
-  }] = (0, _useDataAction.default)((_ref2, _ref3) => {
-    let [query, total] = _ref2;
-    let {
-      abortController,
-      status
-    } = _ref3;
+  }] = (0, _useDataAction.default)(([query, total], {
+    abortController,
+    status
+  }) => {
     if (status === _useDataAction.STATUS_LOADING && abortController) {
       abortController.abort();
       return Promise.reject({
@@ -3832,7 +4038,7 @@ function useExport(hookOptions) {
  * @param {Array}   response
  * @param {any}     current
  * @param {boolean} shouldSaveHeaders
- * @return {any} -
+ * @return {any} Form results
  */
 function mergeFormExportData(response, current, shouldSaveHeaders) {
   response.forEach(formResult => {
@@ -3866,18 +4072,14 @@ function downloadExportsResults(dataResults) {
     (0, _downloadBlob.default)(files[0].blob, files[0].filename);
     return;
   }
-  __webpack_require__.e(/*! import() | jszip.vendor */ "jszip.vendor").then(__webpack_require__.t.bind(__webpack_require__, /*! jszip */ "../node_modules/jszip/dist/jszip.min.js", 23)).then(_ref4 => {
-    let {
-      default: JSZip
-    } = _ref4;
+  __webpack_require__.e(/*! import() | jszip.vendor */ "jszip.vendor").then(__webpack_require__.t.bind(__webpack_require__, /*! jszip */ "../node_modules/jszip/dist/jszip.min.js", 23)).then(({
+    default: JSZip
+  }) => {
     const zip = new JSZip();
-    files.forEach(_ref5 => {
-      let {
-        filename,
-        blob
-      } = _ref5;
-      return zip.file(filename, blob);
-    });
+    files.forEach(({
+      filename,
+      blob
+    }) => zip.file(filename, blob));
     return zip.generateAsync({
       type: 'blob'
     });
@@ -3891,7 +4093,7 @@ function downloadExportsResults(dataResults) {
  *
  * @param {any}  formResult
  * @param {Date} currentDate
- * @return {{filename: string, blob: Blob}} -
+ * @return {{filename: string, blob: Blob}} Filename and blob
  */
 function transformFormResultIntoBlob(formResult, currentDate) {
   return {
@@ -3970,10 +4172,9 @@ exports["default"] = useMethodsReducer;
  * @param {any} methods
  * @param {any} initialState
  * @param {any} init
- * @return {Array<any>} -
+ * @return {Array<any>} [state, actions, dispatch]
  */
-function useMethodsReducer(methods, initialState) {
-  let init = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+function useMethodsReducer(methods, initialState, init = undefined) {
   const [state, dispatch] = React.useReducer((currentState, action) => {
     if (!Object.prototype.hasOwnProperty.call(methods, action.type)) {
       throw Error(`The action type ${action.type} is not exists`);
@@ -3988,7 +4189,7 @@ function useMethodsReducer(methods, initialState) {
  *
  * @param {any}      methods
  * @param {Function} dispatch
- * @return {{}} -
+ * @return {{}} Actions
  */
 function generateActions(methods, dispatch) {
   return Object.keys(methods).reduce((current, type) => {
@@ -4048,10 +4249,9 @@ let currentFlatQuery = {};
  *
  * @param {any}    command
  * @param {Object} options
- * @return {{fetchData: any, data: any, meta: any, query: any, actions: {setOrder: any, setFilter: any, setPage: any}}} -
+ * @return {{fetchData: any, data: any, meta: any, query: any, actions: {setOrder: any, setFilter: any, setPage: any}}} REST data
  */
-function useRestDataList(command) {
-  let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+function useRestDataList(command, options = {}) {
   options = {
     ...defaultOptions,
     ...options
@@ -4084,15 +4284,12 @@ function useRestDataList(command) {
   // The fetch data action.
   const [fetchData, {
     status: fetchDataStatus
-  }] = (0, _useDataAction.default)((args, _ref) => {
-    let {
-      abortController
-    } = _ref;
-    return $e.data.get(command, currentFlatQuery, {
-      refresh: true,
-      signal: abortController.signal
-    }).then(response => setFetchResult(response.data)).then(() => options.hooks.afterFetch());
-  }, [command, flatQuery]);
+  }] = (0, _useDataAction.default)((args, {
+    abortController
+  }) => $e.data.get(command, currentFlatQuery, {
+    refresh: true,
+    signal: abortController.signal
+  }).then(response => setFetchResult(response.data)).then(() => options.hooks.afterFetch()), [command, flatQuery]);
   useEffect(() => {
     const queryStringResult = options.useRouterQueryString ? routerQueryString : {};
     setInitial({
@@ -4143,7 +4340,7 @@ function useRestDataList(command) {
 /**
  * A reducer for the query of the rest list fetch.
  *
- * @return {{perPage: any, page: number}|{filter: any, page: number}|{ready: boolean}|{page: any}|(any|{})|Array|{sort: any}} -
+ * @return {{perPage: any, page: number}|{filter: any, page: number}|{ready: boolean}|{page: any}|(any|{})|Array|{sort: any}} { query, flatQuery, actions }
  */
 function useQuery() {
   const [query, actions] = (0, _useMethodsReducer.default)({
@@ -4190,8 +4387,7 @@ function useQuery() {
       per_page: query.perPage,
       order: query.order.direction,
       order_by: query.order.by
-    }).filter(_ref2 => {
-      let [, value] = _ref2;
+    }).filter(([, value]) => {
       // Removes all the falsy values from the flatQuery. In JS empty array is not a falsy value
       // so there is a special case that checks array and removes it from the flatQuery if it is an empty array.
       if (Array.isArray(value) && 0 === value.length) {
@@ -4233,10 +4429,9 @@ const {
  * Manage the router query string base on "hash" history.
  *
  * @param {string[]} queryArgs
- * @return {Array<any, any>} -
+ * @return {Array<any, any>} [ query, setQuery ]
  */
-function useRouterQueryString() {
-  let queryArgs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+function useRouterQueryString(queryArgs = []) {
   const location = (0, _router.useLocation)(),
     [isLocationRead, setIsLocationRead] = useState(false),
     [query, setQuery] = useState(false);
@@ -4320,33 +4515,21 @@ Object.defineProperty(exports, "__esModule", ({
 exports["default"] = void 0;
 var _i18n = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 const generalError = () => __('Something went wrong, please try again later.', 'elementor-pro');
-var _default = {
+var _default = exports["default"] = {
   trashed: {
-    success: function () {
-      let count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-      return (0, _i18n.sprintf)((0, _i18n._n)('%d submission moved to Trash.', '%d submissions moved to Trash.', count, 'elementor-pro'), count);
-    },
+    success: (count = 1) => (0, _i18n.sprintf)((0, _i18n._n)('%d submission moved to Trash.', '%d submissions moved to Trash.', count, 'elementor-pro'), count),
     error: generalError
   },
   deleted: {
-    success: function () {
-      let count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-      return (0, _i18n.sprintf)((0, _i18n._n)('%d submission permanently deleted.', '%d submissions permanently deleted.', count, 'elementor-pro'), count);
-    },
+    success: (count = 1) => (0, _i18n.sprintf)((0, _i18n._n)('%d submission permanently deleted.', '%d submissions permanently deleted.', count, 'elementor-pro'), count),
     error: generalError
   },
   updated: {
-    success: function () {
-      let count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-      return (0, _i18n.sprintf)((0, _i18n._n)('Submission has been successfully updated.', '%d submissions have been successfully updated.', count, 'elementor-pro'), count);
-    },
+    success: (count = 1) => (0, _i18n.sprintf)((0, _i18n._n)('Submission has been successfully updated.', '%d submissions have been successfully updated.', count, 'elementor-pro'), count),
     error: generalError
   },
   restored: {
-    success: function () {
-      let count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
-      return (0, _i18n.sprintf)((0, _i18n._n)('%d submission restored from Trash.', '%d submissions restored from Trash.', count, 'elementor-pro'), count);
-    },
+    success: (count = 1) => (0, _i18n.sprintf)((0, _i18n._n)('%d submission restored from Trash.', '%d submissions restored from Trash.', count, 'elementor-pro'), count),
     error: generalError
   },
   markedAsRead: {
@@ -4362,7 +4545,6 @@ var _default = {
     failed: () => __('Action failed to run, please check your integration.', 'elementor-pro')
   }
 };
-exports["default"] = _default;
 
 /***/ }),
 
@@ -4401,8 +4583,8 @@ var _bulkActionSelect = __webpack_require__(/*! ../components/bulk-action-select
 var _useExport = __webpack_require__(/*! ../hooks/use-export */ "../modules/forms/submissions/assets/js/admin/hooks/use-export.js");
 var _noticesContext = __webpack_require__(/*! ../context/notices-context */ "../modules/forms/submissions/assets/js/admin/context/notices-context.js");
 var _settingsContext = __webpack_require__(/*! ../context/settings-context */ "../modules/forms/submissions/assets/js/admin/context/settings-context.js");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const {
   useMemo,
   useState
@@ -4459,11 +4641,9 @@ function Index() {
     checked,
     filter
   });
-  const [updateRead] = (0, _useDataAction.default)((_ref, _ref2) => {
-    let [query, isRead] = _ref;
-    let {
-      abortController
-    } = _ref2;
+  const [updateRead] = (0, _useDataAction.default)(([query, isRead], {
+    abortController
+  }) => {
     if (!validateRestAction(query)) {
       return Promise.reject();
     }
@@ -4474,11 +4654,9 @@ function Index() {
       signal: abortController.signal
     }).then(result => notifySuccess(messages.success(result.data.meta?.affected || 1))).then(fetchData).catch(() => notifyError(messages.error()));
   });
-  const [restoreItems] = (0, _useDataAction.default)((_ref3, _ref4) => {
-    let [query] = _ref3;
-    let {
-      abortController
-    } = _ref4;
+  const [restoreItems] = (0, _useDataAction.default)(([query], {
+    abortController
+  }) => {
     if (!validateRestAction(query)) {
       return Promise.reject();
     }
@@ -4486,11 +4664,9 @@ function Index() {
       signal: abortController.signal
     }).then(result => notifySuccess(_noticeMessages.default.restored.success(result.data.meta?.affected || 1))).then(fetchData).catch(() => notifyError(_noticeMessages.default.restored.error()));
   });
-  const [deleteItems] = (0, _useDataAction.default)((_ref5, _ref6) => {
-    let [query] = _ref5;
-    let {
-      abortController
-    } = _ref6;
+  const [deleteItems] = (0, _useDataAction.default)(([query], {
+    abortController
+  }) => {
     if (!validateRestAction(query)) {
       return Promise.reject();
     }
@@ -4619,8 +4795,7 @@ function Index() {
     checkedGroup: checked,
     onChange: setChecked,
     allValues: data.map(checkedItem => checkedItem.id)
-  })), Object.entries(tableTitles).map(_ref7 => {
-    let [key, tableTitle] = _ref7;
+  })), Object.entries(tableTitles).map(([key, tableTitle]) => {
     const cellProps = {
       component: 'th',
       className: `manage-column ${tableTitle.className || ''}`
@@ -4669,18 +4844,15 @@ function Index() {
     }),
     isSearching: !!filter.search && fetchDataStatus === _useDataAction.STATUS_LOADING
   }), /*#__PURE__*/_react.default.createElement(_linksFilter.default, {
-    options: STATUSES.map(_ref8 => {
-      let {
-        value,
-        label
-      } = _ref8;
-      return {
-        value,
-        label,
-        count: meta.count?.[value],
-        shouldShow: 'all' === value || meta.count?.[value] > 0
-      };
-    }),
+    options: STATUSES.map(({
+      value,
+      label
+    }) => ({
+      value,
+      label,
+      count: meta.count?.[value],
+      shouldShow: 'all' === value || meta.count?.[value] > 0
+    })),
     value: filter.status,
     onChange: value => setFilter({
       status: value
@@ -4722,11 +4894,10 @@ function Index() {
       after: filter.after,
       before: filter.before
     },
-    onChange: _ref9 => {
-      let {
-        after,
-        before
-      } = _ref9;
+    onChange: ({
+      after,
+      before
+    }) => {
       setFilter({
         ...(after !== undefined ? {
           after
@@ -4801,8 +4972,8 @@ var _useDataAction = _interopRequireWildcard(__webpack_require__(/*! ../hooks/us
 var _date = __webpack_require__(/*! ../utils/date */ "../modules/forms/submissions/assets/js/admin/utils/date.js");
 var _submissionValue = _interopRequireDefault(__webpack_require__(/*! ../components/submission-value */ "../modules/forms/submissions/assets/js/admin/components/submission-value/index.js"));
 var _settingsContext = __webpack_require__(/*! ../context/settings-context */ "../modules/forms/submissions/assets/js/admin/context/settings-context.js");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /* eslint-disable jsx-a11y/anchor-is-valid */
 
 const {
@@ -4857,11 +5028,9 @@ function Item(props) {
   }, []);
 
   // Move submission to trash
-  const [deleteItem] = (0, _useDataAction.default)((_ref, _ref2) => {
-    let [query = {}] = _ref;
-    let {
-      abortController
-    } = _ref2;
+  const [deleteItem] = (0, _useDataAction.default)(([query = {}], {
+    abortController
+  }) => {
     const messages = _noticeMessages.default[query.force ? 'deleted' : 'trashed'];
     return $e.data.delete('form-submissions/index', {
       id: props.id,
@@ -4874,8 +5043,7 @@ function Item(props) {
   // Update field values.
   const [update, {
     status: updateStatus
-  }] = (0, _useDataAction.default)(_ref3 => {
-    let [values] = _ref3;
+  }] = (0, _useDataAction.default)(([values]) => {
     return $e.data.update('form-submissions/index', {
       values
     }, {
@@ -4970,9 +5138,9 @@ function Item(props) {
     className: "misc-pub-section"
   }, __('Update Date:', 'elementor-pro'), " ", /*#__PURE__*/_react.default.createElement("strong", null, (0, _date.formatToLocalDateTime)(data.updated_at))), data.user_name && /*#__PURE__*/_react.default.createElement("div", {
     className: "misc-pub-section"
-  }, __('User Name:', 'elementor-pro'), " ", /*#__PURE__*/_react.default.createElement("strong", null, data.user_name)), /*#__PURE__*/_react.default.createElement("div", {
+  }, __('User Name:', 'elementor-pro'), " ", /*#__PURE__*/_react.default.createElement("strong", null, data.user_name)), data.user_ip && /*#__PURE__*/_react.default.createElement("div", {
     className: "misc-pub-section"
-  }, __('User IP:', 'elementor-pro'), " ", /*#__PURE__*/_react.default.createElement("strong", null, data.user_ip)), /*#__PURE__*/_react.default.createElement("div", {
+  }, __('User IP:', 'elementor-pro'), " ", /*#__PURE__*/_react.default.createElement("strong", null, data.user_ip)), data.user_agent && /*#__PURE__*/_react.default.createElement("div", {
     className: "misc-pub-section"
   }, __('User Agent:', 'elementor-pro'), " ", /*#__PURE__*/_react.default.createElement("strong", null, data.user_agent))), /*#__PURE__*/_react.default.createElement("div", {
     id: "major-publishing-actions"
@@ -5054,8 +5222,7 @@ exports["default"] = downloadBlob;
  * @param {any}    blob
  * @param {string} filename
  */
-function downloadBlob(blob) {
-  let filename = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+function downloadBlob(blob, filename = '') {
   const link = document.createElement('a');
   link.setAttribute('href', URL.createObjectURL(blob));
   link.style.visibility = 'hidden';
@@ -5066,238 +5233,6 @@ function downloadBlob(blob) {
   link.click();
   document.body.removeChild(link);
 }
-
-/***/ }),
-
-/***/ "../node_modules/create-react-context/lib/implementation.js":
-/*!******************************************************************!*\
-  !*** ../node_modules/create-react-context/lib/implementation.js ***!
-  \******************************************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-exports.__esModule = true;
-
-var _react = __webpack_require__(/*! react */ "react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _propTypes = __webpack_require__(/*! prop-types */ "../node_modules/prop-types/index.js");
-
-var _propTypes2 = _interopRequireDefault(_propTypes);
-
-var _gud = __webpack_require__(/*! gud */ "../node_modules/gud/index.js");
-
-var _gud2 = _interopRequireDefault(_gud);
-
-var _warning = __webpack_require__(/*! warning */ "../node_modules/warning/warning.js");
-
-var _warning2 = _interopRequireDefault(_warning);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var MAX_SIGNED_31_BIT_INT = 1073741823;
-
-// Inlined Object.is polyfill.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
-function objectIs(x, y) {
-  if (x === y) {
-    return x !== 0 || 1 / x === 1 / y;
-  } else {
-    return x !== x && y !== y;
-  }
-}
-
-function createEventEmitter(value) {
-  var handlers = [];
-  return {
-    on: function on(handler) {
-      handlers.push(handler);
-    },
-    off: function off(handler) {
-      handlers = handlers.filter(function (h) {
-        return h !== handler;
-      });
-    },
-    get: function get() {
-      return value;
-    },
-    set: function set(newValue, changedBits) {
-      value = newValue;
-      handlers.forEach(function (handler) {
-        return handler(value, changedBits);
-      });
-    }
-  };
-}
-
-function onlyChild(children) {
-  return Array.isArray(children) ? children[0] : children;
-}
-
-function createReactContext(defaultValue, calculateChangedBits) {
-  var _Provider$childContex, _Consumer$contextType;
-
-  var contextProp = '__create-react-context-' + (0, _gud2.default)() + '__';
-
-  var Provider = function (_Component) {
-    _inherits(Provider, _Component);
-
-    function Provider() {
-      var _temp, _this, _ret;
-
-      _classCallCheck(this, Provider);
-
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      return _ret = (_temp = (_this = _possibleConstructorReturn(this, _Component.call.apply(_Component, [this].concat(args))), _this), _this.emitter = createEventEmitter(_this.props.value), _temp), _possibleConstructorReturn(_this, _ret);
-    }
-
-    Provider.prototype.getChildContext = function getChildContext() {
-      var _ref;
-
-      return _ref = {}, _ref[contextProp] = this.emitter, _ref;
-    };
-
-    Provider.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
-      if (this.props.value !== nextProps.value) {
-        var oldValue = this.props.value;
-        var newValue = nextProps.value;
-        var changedBits = void 0;
-
-        if (objectIs(oldValue, newValue)) {
-          changedBits = 0; // No change
-        } else {
-          changedBits = typeof calculateChangedBits === 'function' ? calculateChangedBits(oldValue, newValue) : MAX_SIGNED_31_BIT_INT;
-          if (true) {
-            (0, _warning2.default)((changedBits & MAX_SIGNED_31_BIT_INT) === changedBits, 'calculateChangedBits: Expected the return value to be a ' + '31-bit integer. Instead received: %s', changedBits);
-          }
-
-          changedBits |= 0;
-
-          if (changedBits !== 0) {
-            this.emitter.set(nextProps.value, changedBits);
-          }
-        }
-      }
-    };
-
-    Provider.prototype.render = function render() {
-      return this.props.children;
-    };
-
-    return Provider;
-  }(_react.Component);
-
-  Provider.childContextTypes = (_Provider$childContex = {}, _Provider$childContex[contextProp] = _propTypes2.default.object.isRequired, _Provider$childContex);
-
-  var Consumer = function (_Component2) {
-    _inherits(Consumer, _Component2);
-
-    function Consumer() {
-      var _temp2, _this2, _ret2;
-
-      _classCallCheck(this, Consumer);
-
-      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-        args[_key2] = arguments[_key2];
-      }
-
-      return _ret2 = (_temp2 = (_this2 = _possibleConstructorReturn(this, _Component2.call.apply(_Component2, [this].concat(args))), _this2), _this2.state = {
-        value: _this2.getValue()
-      }, _this2.onUpdate = function (newValue, changedBits) {
-        var observedBits = _this2.observedBits | 0;
-        if ((observedBits & changedBits) !== 0) {
-          _this2.setState({ value: _this2.getValue() });
-        }
-      }, _temp2), _possibleConstructorReturn(_this2, _ret2);
-    }
-
-    Consumer.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
-      var observedBits = nextProps.observedBits;
-
-      this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
-      : observedBits;
-    };
-
-    Consumer.prototype.componentDidMount = function componentDidMount() {
-      if (this.context[contextProp]) {
-        this.context[contextProp].on(this.onUpdate);
-      }
-      var observedBits = this.props.observedBits;
-
-      this.observedBits = observedBits === undefined || observedBits === null ? MAX_SIGNED_31_BIT_INT // Subscribe to all changes by default
-      : observedBits;
-    };
-
-    Consumer.prototype.componentWillUnmount = function componentWillUnmount() {
-      if (this.context[contextProp]) {
-        this.context[contextProp].off(this.onUpdate);
-      }
-    };
-
-    Consumer.prototype.getValue = function getValue() {
-      if (this.context[contextProp]) {
-        return this.context[contextProp].get();
-      } else {
-        return defaultValue;
-      }
-    };
-
-    Consumer.prototype.render = function render() {
-      return onlyChild(this.props.children)(this.state.value);
-    };
-
-    return Consumer;
-  }(_react.Component);
-
-  Consumer.contextTypes = (_Consumer$contextType = {}, _Consumer$contextType[contextProp] = _propTypes2.default.object, _Consumer$contextType);
-
-
-  return {
-    Provider: Provider,
-    Consumer: Consumer
-  };
-}
-
-exports["default"] = createReactContext;
-module.exports = exports['default'];
-
-/***/ }),
-
-/***/ "../node_modules/create-react-context/lib/index.js":
-/*!*********************************************************!*\
-  !*** ../node_modules/create-react-context/lib/index.js ***!
-  \*********************************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-exports.__esModule = true;
-
-var _react = __webpack_require__(/*! react */ "react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _implementation = __webpack_require__(/*! ./implementation */ "../node_modules/create-react-context/lib/implementation.js");
-
-var _implementation2 = _interopRequireDefault(_implementation);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports["default"] = _react2.default.createContext || _implementation2.default;
-module.exports = exports['default'];
 
 /***/ }),
 
@@ -6492,7 +6427,7 @@ if (false) {} else {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "createHashSource": () => (/* binding */ createHashSource)
+/* harmony export */   createHashSource: () => (/* binding */ createHashSource)
 /* harmony export */ });
 // take some code from
 // https://github.com/ReactTraining/history/blob/master/modules/createHashHistory.js
@@ -6579,7 +6514,7 @@ let createHashSource = (initialPathname = '/') => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "polyfill": () => (/* binding */ polyfill)
+/* harmony export */   polyfill: () => (/* binding */ polyfill)
 /* harmony export */ });
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -6845,18 +6780,13 @@ module.exports = wp.i18n;
 /***/ ((module) => {
 
 function _extends() {
-  module.exports = _extends = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
+  return module.exports = _extends = Object.assign ? Object.assign.bind() : function (n) {
+    for (var e = 1; e < arguments.length; e++) {
+      var t = arguments[e];
+      for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
     }
-    return target;
-  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
-  return _extends.apply(this, arguments);
+    return n;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports, _extends.apply(null, arguments);
 }
 module.exports = _extends, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -6868,9 +6798,9 @@ module.exports = _extends, module.exports.__esModule = true, module.exports["def
   \***********************************************************************/
 /***/ ((module) => {
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : {
-    "default": obj
+function _interopRequireDefault(e) {
+  return e && e.__esModule ? e : {
+    "default": e
   };
 }
 module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
@@ -7027,6 +6957,7 @@ module.exports = _interopRequireDefault, module.exports.__esModule = true, modul
 /******/ 					script.setAttribute("nonce", __webpack_require__.nc);
 /******/ 				}
 /******/ 				script.setAttribute("data-webpack", dataWebpackPrefix + key);
+/******/ 		
 /******/ 				script.src = url;
 /******/ 			}
 /******/ 			inProgress[url] = [done];
@@ -7039,7 +6970,7 @@ module.exports = _interopRequireDefault, module.exports.__esModule = true, modul
 /******/ 				script.parentNode && script.parentNode.removeChild(script);
 /******/ 				doneFns && doneFns.forEach((fn) => (fn(event)));
 /******/ 				if(prev) return prev(event);
-/******/ 			};
+/******/ 			}
 /******/ 			var timeout = setTimeout(onScriptComplete.bind(null, undefined, { type: 'timeout', target: script }), 120000);
 /******/ 			script.onerror = onScriptComplete.bind(null, script.onerror);
 /******/ 			script.onload = onScriptComplete.bind(null, script.onload);
@@ -7064,11 +6995,14 @@ module.exports = _interopRequireDefault, module.exports.__esModule = true, modul
 /******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
 /******/ 		var document = __webpack_require__.g.document;
 /******/ 		if (!scriptUrl && document) {
-/******/ 			if (document.currentScript)
-/******/ 				scriptUrl = document.currentScript.src
+/******/ 			if (document.currentScript && document.currentScript.tagName.toUpperCase() === 'SCRIPT')
+/******/ 				scriptUrl = document.currentScript.src;
 /******/ 			if (!scriptUrl) {
 /******/ 				var scripts = document.getElementsByTagName("script");
-/******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
+/******/ 				if(scripts.length) {
+/******/ 					var i = scripts.length - 1;
+/******/ 					while (i > -1 && (!scriptUrl || !/^http(s?):/.test(scriptUrl))) scriptUrl = scripts[i--].src;
+/******/ 				}
 /******/ 			}
 /******/ 		}
 /******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
@@ -7123,7 +7057,7 @@ module.exports = _interopRequireDefault, module.exports.__esModule = true, modul
 /******/ 								}
 /******/ 							};
 /******/ 							__webpack_require__.l(url, loadingEnded, "chunk-" + chunkId, chunkId);
-/******/ 						} else installedChunks[chunkId] = 0;
+/******/ 						}
 /******/ 					}
 /******/ 				}
 /******/ 		};
@@ -7186,7 +7120,9 @@ var _app = _interopRequireDefault(__webpack_require__(/*! ./app */ "../modules/f
 $e.components.register(new _component.default());
 $e.components.register(new _formsComponent.default());
 const AppWrapper = elementorCommon.config.isDebug ? _react.default.StrictMode : _react.default.Fragment;
-ReactDOM.render( /*#__PURE__*/_react.default.createElement(AppWrapper, null, /*#__PURE__*/_react.default.createElement(_app.default, null)), document.getElementById('e-form-submissions'));
+
+// eslint-disable-next-line react/no-deprecated
+ReactDOM.render(/*#__PURE__*/_react.default.createElement(AppWrapper, null, /*#__PURE__*/_react.default.createElement(_app.default, null)), document.getElementById('e-form-submissions'));
 })();
 
 /******/ })()
