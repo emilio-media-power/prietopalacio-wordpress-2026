@@ -1,0 +1,74 @@
+# Logs
+*.log
+error_log
+wp-content/debug.log
+
+# IDEs y editores
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+
+# Dependencias
+node_modules/
+vendor/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
+__MACOSX/
+
+# Archivos comprimidos y backups
+*.zip
+*.sql
+*.sql.gz
+*.tar.gz
+*.wpress
+*.daf
+/wp-content/ai1wm-backups
+wp-content/backups-dup-lite/
+wp-snapshots/
+
+# Variables de entorno y credenciales
+.env
+.env.*
+*.pem
+*.key
+
+# WordPress - Configuración
+wp-config.php
+/license.txt
+
+# WordPress - Cache y uploads
+wp-content/advanced-cache.php
+wp-content/backup-db/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/upgrade-temp-backup/
+wp-content/uploads/
+wp-content/wflogs/
+wp-content/mu-plugins/
+wp-content/wp-cache-config.php
+wp-content/db.php
+wp-content/object-cache.php
+
+# WordPress - Plugins build
+wp-content/plugins/*/node_modules
+wp-content/plugins/*/build
+wp-content/plugins/*/assets/css/build
+!wp-content/plugins/*/assets/css/build/magnific-popup.css
+wp-content/plugins/*/assets/js/build
+wp-content/plugins/*/js/build
+wp-content/plugins/*/css/build
+wp-content/plugins/hello.php
+
+# WordPress - Themes build
+wp-content/themes/*/css/build
+wp-content/themes/*/assets/css/build
+wp-content/themes/*/assets/js/build
+wp-content/themes/*/js/build
+wp-content/themes/*/node_modules

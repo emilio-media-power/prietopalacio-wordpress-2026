@@ -1,0 +1,58 @@
+#v2025.01.30
+services:
+  mariadb.local:
+    image: mariadb:10.5.25
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - TZ=Europe/Madrid
+    ports:
+      - 3306:3306
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 5s
+      retries: 5
+  httpd.local:
+    image: acceseo/httpd
+    # environment:
+      # - TZ=Europe/Madrid
+      # - HTTPD_APP_DIRECTORY=/app
+      # - HTTPD_FPM_HANDLER=php.local:9000
+      # - HTTPD_SERVERNAME=localhost
+      # - HTTPD_TIMEOUT=60
+    volumes:
+      - .:/app
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - php.local
+  php.local:
+    image: acceseo/php-fpm:7.4
+    volumes:
+      - .:/app
+    environment:
+      # - TZ=Europe/Madrid
+      # - PHP_APP_DIRECTORY=/app
+      - PHP_MEMORY_LIMIT=1024M
+      # - PHP_MAX_EXECUTION_TIME=600
+      # - PHP_MAX_INPUT_TIME=600
+      # - XDEBUG_MODE=off
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      mariadb.local:
+        condition: service_healthy
+    user: www-data
+  mailpit.local:
+    image: axllent/mailpit:v1.18.5
+    ports:
+      - 8025:8025
+  node.local:
+    image: node:20
+    working_dir: /app
+    user: node
+    volumes:
+      - .:/app
+    environment:
+      - TZ=Europe/Madrid
+    profiles: [asset]
